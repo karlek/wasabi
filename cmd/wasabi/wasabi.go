@@ -28,7 +28,6 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	flag.Parse()
 	parseAdvancedFlags()
-	parseFunctionFlag()
 
 	// Handle interrupts as fails, so we can chain with an image viewer.
 	inter := make(chan os.Signal, 1)
@@ -44,15 +43,19 @@ func main() {
 }
 
 func renderBuddha() (err error) {
+
 	// Create coloring scheme for the buddhabrot rendering.
 	var grad coloring.Gradient
+
+	// Light
+	grad.AddColor(colorful.Color{0.0, 1.0, 0.0})
+	grad.AddColor(colorful.Color{0.0, 0.65, 1.0})
+	grad.AddColor(colorful.Color{1.0, 0.0, 1.0})
+
 	// grad.AddColor(colorful.Color{0.02, 0.01, 0.01})
 	// grad.AddColor(colorful.Color{0.02, 0.01, 0.02})
 	// grad.AddColor(colorful.Color{0.0, 0.0, 0.0})
-	grad.AddColor(colorful.Color{0.0, 0.0, 1.0})
-	grad.AddColor(colorful.Color{0.0, 1.0, 0.0})
-	grad.AddColor(colorful.Color{1.0, 0.0, 0.0})
-	// grad.AddColor(colorful.Color{0.0, 0.65, 1.0})
+	// grad.AddColor(colorful.Color{1.0, 1.0, 1.0})
 	// grad.AddColor(colorful.Color{0.65, 1.0, 0.0})
 	// grad.AddColor(colorful.Color{0.1, 0.1, 0.1})
 	// grad.AddColor(colorful.Color{0.3, 0.3, 0.3})
@@ -86,29 +89,24 @@ func renderBuddha() (err error) {
 	// grad.AddColor(colorful.Color{1, 1, 1})
 
 	ranges := []float64{
-		float64(threshold) / float64(iterations),
-		// 50.0 / float64(iterations),
-		float64(threshold) * 10 / float64(iterations),
+		// float64(threshold) / float64(iterations),
+		// float64(threshold) * 10 / float64(iterations),
+		// float64(threshold) * 100 / float64(iterations),
+		// 20.0 / float64(iterations),
 		// 200.0 / float64(iterations),
-		// 1000.0 / float64(iterations),
-		float64(threshold) * 100 / float64(iterations),
 		// 2000.0 / float64(iterations),
+		// 1000.0 / float64(iterations),
 		// 20000.0 / float64(iterations),
 		// 0.0000001,
 		// 2 * 0.000001,
-		// 0.00001,
-		// 0.0001,
-		// 0.001,
+		0.00001,
+		0.0001,
+		0.001,
 		// 0.01,
 		// 0.1,
 		// 0.5,
 	}
-	// xor thing
-	// orbit gradient
-	// function for iteration
-	// method := coloring.NewColoring(color.RGBA{255, 255, 255, 0}, mode, grad, ranges)
 	method := coloring.NewColoring(color.RGBA{0, 0, 0, 0}, mode, grad, ranges)
-	// method := coloring.NewColoring(color.RGBA{0, 0, 0, 255}, mode, grad, ranges)
 
 	if !silent {
 		logrus.Println("[.] Initializing.")
@@ -117,28 +115,28 @@ func renderBuddha() (err error) {
 	var ren *render.Render
 	// Load previous histograms and render the image with, maybe, new options.
 
-	settings := logrus.Fields{
-		"factor":     factor,
-		"f":          getFunctionName(f),
-		"out":        out,
-		"load":       load,
-		"save":       save,
-		"anti":       anti,
-		"brot":       getFunctionName(brot),
-		"palette":    palettePath,
-		"tries":      tries,
-		"bailout":    bailout,
-		"offset":     offset,
-		"exposure":   exposure,
-		"width":      width,
-		"height":     height,
-		"iterations": iterations,
-		"zoom":       zoom,
-		"seed":       seed,
-	}
-	if !silent {
-		logrus.WithFields(settings).Println("Config")
-	}
+	// settings := logrus.Fields{
+	// 	"factor":     factor,
+	// 	"f":          getFunctionName(f),
+	// 	"out":        out,
+	// 	"load":       load,
+	// 	"save":       save,
+	// 	"anti":       anti,
+	// 	"brot":       getFunctionName(brot),
+	// 	"palette":    palettePath,
+	// 	"tries":      tries,
+	// 	"bailout":    bailout,
+	// 	"offset":     offset,
+	// 	"exposure":   exposure,
+	// 	"width":      width,
+	// 	"height":     height,
+	// 	"iterations": iterations,
+	// 	"zoom":       zoom,
+	// 	"seed":       seed,
+	// }
+	// if !silent {
+	// 	logrus.WithFields(settings).Println("Config")
+	// }
 
 	var orbitRatio float64
 	ren = render.New(width, height, f, factor, exposure)

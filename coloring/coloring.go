@@ -8,11 +8,12 @@ import (
 	"text/tabwriter"
 )
 
+// Type determines the coloring method.
 type Type int
 
 const (
-	Modulo Type = iota
-	IterationCount
+	Modulo         Type = iota // Determine the coloring scheme based on the modulo of the iteration.
+	IterationCount             // Determine the coloring scheme based on the length of the orbit.
 )
 
 func (t Type) String() string {
@@ -26,6 +27,7 @@ func (t Type) String() string {
 	}
 }
 
+// Coloring contains information on how to color a fractal.
 type Coloring struct {
 	Grad   Gradient
 	mode   Type

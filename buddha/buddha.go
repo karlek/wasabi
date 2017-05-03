@@ -13,7 +13,7 @@ import (
 	"github.com/karlek/wasabi/fractal"
 )
 
-// fillHistograms creates a number of workers which finds orbits and stores
+// FillHistograms creates a number of workers which finds orbits and stores
 // their points in a histogram.
 func FillHistograms(frac *fractal.Fractal, workers int) float64 {
 	bar, _ := barcli.New(int(frac.Tries * float64(frac.Width*frac.Height)))
@@ -63,10 +63,9 @@ func FillHistograms(frac *fractal.Fractal, workers int) float64 {
 func arbitrary(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG, share int64, wg *sync.WaitGroup, bar *barcli.Bar) {
 	var potentials = make([]complex128, frac.Iterations)
 	z := complex(0, 0)
-	c := complex(0, 0)
+	c := rng.Complex128Go()
 	var total int64
 	var i int64
-	c = rng.Complex128Go()
 	for i = 0; i < share; i++ {
 		// Increase progress bar.
 		bar.Inc()
@@ -74,7 +73,6 @@ func arbitrary(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG
 
 		// z = rng.Complex128Go()
 		c = rng.Complex128Go()
-		// mandel.FieldLines(z, c, potentials, frac)
 		length := frac.Func(z, c, potentials, frac)
 		if length == -1 {
 			continue
@@ -87,8 +85,6 @@ func arbitrary(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG
 	wg.Done()
 	go func() { totChan <- total }()
 }
-
-// Punkterna orbitlängderna blir utfallsrum som vi samplar med permutation.
 
 func searchNearby(z, c complex128, potentials []complex128, frac *fractal.Fractal, total *int64, bar *barcli.Bar) (i int64) {
 	h, tol := 1e-5, 1e-2
@@ -133,15 +129,19 @@ func iterative(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG
 	}
 	h = h + nudge
 	var x, y float64
-	var i int
+	var i int64
 	for y = -2; y <= 2; y += h {
 		for x = -2; x <= 2; x += h {
 			bar.Inc()
 			c = complex(x, y)
 
 			z = rng.Complex128Go()
-			total += frac.Func(z, c, potentials, frac)
+			length := frac.Func(z, c, potentials, frac)
+			total += length
 			i++
+			if float64(length) > math.Max(math.Max(float64(frac.Threshold), float64(frac.Iterations)/1e4), 20) {
+				i += searchNearby(z, c, potentials, frac, &total, bar)
+			}
 		}
 	}
 	wg.Done()

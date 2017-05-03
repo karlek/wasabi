@@ -72,6 +72,13 @@ z := complex(math.Sin(real(c)), math.Sin(imag(c)))
 
 ### Future
 
+
+* Xor thing
+* Orbit gradient
+* Function for iteration
+* Punkterna orbitlängderna blir utfallsrum som vi samplar med permutation.
+
+
 * Only allow a certain type of orbits. 
     - How to discern between different types?
         + Constant increment on certain axis indicates spirals?
