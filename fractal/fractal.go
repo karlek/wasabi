@@ -13,6 +13,17 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 )
 
+type Orbit struct {
+	Points    []complex128
+	z         complex128
+	Dist      float64
+	PointTrap complex128
+}
+
+func NewOrbitTrap(points []complex128, pointTrap complex128) *Orbit {
+	return &Orbit{Points: points, PointTrap: pointTrap, Dist: 1e6}
+}
+
 type Fractal struct {
 	Width, Height int
 	R, G, B       histo.Histo
@@ -20,7 +31,7 @@ type Fractal struct {
 	// Fractal specific.
 	Iterations int64
 	Plane      func(complex128, complex128) complex128
-	Func       func(complex128, complex128, []complex128, *Fractal) int64
+	Func       func(complex128, complex128, *Orbit, *Fractal) int64
 	Coef       complex128
 	Bailout    float64
 	Zoom       float64
@@ -33,12 +44,12 @@ type Fractal struct {
 }
 
 // New returns a new render for fractals.
-func New(width, height int, iterations int64, method *coloring.Coloring, coef complex128, bailout float64, plane func(complex128, complex128) complex128, zoom, offsetReal, offsetImag float64, seed int64, points int64, tries float64, f func(complex128, complex128, []complex128, *Fractal) int64, threshold int64) *Fractal {
+func New(width, height int, iterations int64, method *coloring.Coloring, coef complex128, bailout float64, plane func(complex128, complex128) complex128, zoom, offsetReal, offsetImag float64, seed int64, points int64, tries float64, f func(complex128, complex128, *Orbit, *Fractal) int64, threshold int64) *Fractal {
 	r, g, b := histo.New(width, height), histo.New(width, height), histo.New(width, height)
 	return &Fractal{Width: width, Height: height, Iterations: iterations, R: r, G: g, B: b, Method: method, Coef: coef, Bailout: bailout, Plane: plane, Zoom: zoom, OffsetReal: offsetReal, OffsetImag: offsetImag, Seed: seed, Points: points, Tries: tries, Func: f, Threshold: threshold}
 }
 
-func NewStd(f func(complex128, complex128, []complex128, *Fractal) int64) *Fractal {
+func NewStd(f func(complex128, complex128, *Orbit, *Fractal) int64) *Fractal {
 	var grad coloring.Gradient
 	grad.AddColor(colorful.Color{1, 0, 0})
 	grad.AddColor(colorful.Color{0, 1, 0})

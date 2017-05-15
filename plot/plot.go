@@ -93,7 +93,7 @@ func Log(x, factor float64) float64 {
 
 // Sqrt is a square root color scaling function.
 func Sqrt(x, factor float64) float64 {
-	return math.Sqrt(factor * x)
+	return math.Sqrt(x * factor)
 }
 
 // Lin is a linear color scaling function.

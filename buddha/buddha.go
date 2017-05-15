@@ -61,7 +61,7 @@ func FillHistograms(frac *fractal.Fractal, workers int) float64 {
 // random point in it's domain and iterating it a number of times to see if it
 // converges or diverges.
 func arbitrary(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG, share int64, wg *sync.WaitGroup, bar *barcli.Bar) {
-	var potentials = make([]complex128, frac.Iterations)
+	orbit := fractal.NewOrbitTrap(make([]complex128, frac.Iterations), complex(-1.14, 0))
 	z := complex(0, 0)
 	c := rng.Complex128Go()
 	var total int64
@@ -73,20 +73,20 @@ func arbitrary(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG
 
 		// z = rng.Complex128Go()
 		c = rng.Complex128Go()
-		length := frac.Func(z, c, potentials, frac)
+		length := frac.Func(z, c, orbit, frac)
 		if length == -1 {
 			continue
 		}
 		total += length
 		if float64(length) > math.Max(math.Max(float64(frac.Threshold), float64(frac.Iterations)/1e4), 20) {
-			i += searchNearby(z, c, potentials, frac, &total, bar)
+			i += searchNearby(z, c, orbit, frac, &total, bar)
 		}
 	}
 	wg.Done()
 	go func() { totChan <- total }()
 }
 
-func searchNearby(z, c complex128, potentials []complex128, frac *fractal.Fractal, total *int64, bar *barcli.Bar) (i int64) {
+func searchNearby(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal, total *int64, bar *barcli.Bar) (i int64) {
 	h, tol := 1e-5, 1e-2
 	// i = 8 * int64(math.Log10(tol/h))
 	var test int64
@@ -106,7 +106,7 @@ func searchNearby(z, c complex128, potentials []complex128, frac *fractal.Fracta
 
 		for _, cprim := range cs {
 			bar.Inc()
-			length := frac.Func(z, cprim, potentials, frac)
+			length := frac.Func(z, cprim, orbit, frac)
 			(*total) += length
 			if float64(length) < math.Max(math.Max(float64(frac.Threshold), float64(frac.Iterations)/1e4), 20) {
 				break
@@ -118,7 +118,7 @@ func searchNearby(z, c complex128, potentials []complex128, frac *fractal.Fracta
 }
 
 func iterative(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG, share int64, wg *sync.WaitGroup, bar *barcli.Bar) {
-	var potentials = make([]complex128, frac.Iterations)
+	orbit := fractal.NewOrbitTrap(make([]complex128, frac.Iterations), complex(0, 0))
 	var total int64
 	z := complex(0, 0)
 	c := complex(0, 0)
@@ -136,11 +136,11 @@ func iterative(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG
 			c = complex(x, y)
 
 			z = rng.Complex128Go()
-			length := frac.Func(z, c, potentials, frac)
+			length := frac.Func(z, c, orbit, frac)
 			total += length
 			i++
 			if float64(length) > math.Max(math.Max(float64(frac.Threshold), float64(frac.Iterations)/1e4), 20) {
-				i += searchNearby(z, c, potentials, frac, &total, bar)
+				i += searchNearby(z, c, orbit, frac, &total, bar)
 			}
 		}
 	}

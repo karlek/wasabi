@@ -26,7 +26,7 @@ var (
 	// The function which scales the color space.
 	f func(float64, float64) float64
 	// The function to calculate (anti-/buddhabrot).
-	brot func(complex128, complex128, []complex128, *fractal.Fractal) int64
+	brot func(complex128, complex128, *fractal.Orbit, *fractal.Fractal) int64
 	// Choose which plane to explore.
 	plane func(complex128, complex128) complex128
 	// Temporary string to parse the _f_ function.

@@ -48,9 +48,14 @@ func renderBuddha() (err error) {
 	var grad coloring.Gradient
 
 	// Light
+	// grad.AddColor(colorful.Color{0.0, 1.0, 0.0})
+	// grad.AddColor(colorful.Color{0.0, 0.65, 1.0})
+	// grad.AddColor(colorful.Color{1.0, 0.0, 1.0})
+
+	// Test
+	grad.AddColor(colorful.Color{1.0, 0.0, 0.0})
 	grad.AddColor(colorful.Color{0.0, 1.0, 0.0})
-	grad.AddColor(colorful.Color{0.0, 0.65, 1.0})
-	grad.AddColor(colorful.Color{1.0, 0.0, 1.0})
+	grad.AddColor(colorful.Color{0.0, 0.0, 1.0})
 
 	// grad.AddColor(colorful.Color{0.02, 0.01, 0.01})
 	// grad.AddColor(colorful.Color{0.02, 0.01, 0.02})
@@ -92,16 +97,16 @@ func renderBuddha() (err error) {
 		// float64(threshold) / float64(iterations),
 		// float64(threshold) * 10 / float64(iterations),
 		// float64(threshold) * 100 / float64(iterations),
-		// 20.0 / float64(iterations),
-		// 200.0 / float64(iterations),
-		// 2000.0 / float64(iterations),
+		20.0 / float64(iterations),
+		200.0 / float64(iterations),
+		2000.0 / float64(iterations),
 		// 1000.0 / float64(iterations),
 		// 20000.0 / float64(iterations),
 		// 0.0000001,
 		// 2 * 0.000001,
-		0.00001,
-		0.0001,
-		0.001,
+		// 0.00001,
+		// 0.0001,
+		// 0.001,
 		// 0.01,
 		// 0.1,
 		// 0.5,
