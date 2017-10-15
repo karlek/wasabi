@@ -1,3 +1,4 @@
+// Packge histo implements a histogram with persistent save and load features.
 package histo
 
 import (

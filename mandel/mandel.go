@@ -9,6 +9,9 @@ import (
 	"github.com/karlek/wasabi/fractal"
 )
 
+// isInBulb returns true if the point c is in one of the larger bulb's of the
+// mandelbrot.
+//
 // Credits: https://github.com/morcmarc/buddhabrot/blob/master/buddhabrot.go
 func isInBulb(c complex128) bool {
 	Cr, Ci := real(c), imag(c)
@@ -79,8 +82,13 @@ func FieldLinesEscapes(z, c complex128, g float64, frac *fractal.Fractal) int64 
 		// This point diverges, so we all the preceeding points are interesting
 		// and will be registered.
 		if real, imag, rp, ip := real(z), imag(z), real(zp), imag(zp); real/rp > g && imag/ip > g {
+			// fmt.Println(real, imag, rp, ip)
 			return i
 		}
+		// Only boundary with values for g == 0.1
+		// if real, imag, rp, ip := real(z), imag(z), real(zp), imag(zp); math.Abs(real/rp) < g && math.Abs(imag/ip) < g {
+		// 	return i
+		// }
 		zp = z
 	}
 	// This point converges; assumed under the number of iterations.
@@ -116,11 +124,11 @@ func OrbitTrap(z, c, trap complex128, frac *fractal.Fractal) float64 {
 	return dist
 }
 
-func Escapes(z, c complex128, frac *fractal.Fractal) int64 {
+func Escapes(skip float64, z, c complex128, frac *fractal.Fractal) int64 {
 	// We ignore all values that we know are in the bulb, and will therefore
 	// converge.
 	if isInBulb(c) {
-		return frac.Iterations
+		// return frac.Iterations
 	}
 
 	// Saved value for cycle-detection.
@@ -129,7 +137,20 @@ func Escapes(z, c complex128, frac *fractal.Fractal) int64 {
 	// See if the complex function diverges before we reach our iteration count.
 	var i int64
 	for i = 0; i < frac.Iterations; i++ {
-		z = z*z + c
+		// r := rand.Float64()
+		// z = f(z, c)
+		// switch i % 4 {
+		// case 0:
+		z = cmplx.Pow(z, z) + c
+		// case 1:
+		// 	z = cmplx.Pow(c, 3) + z
+		// case 2:
+		// 	z = cmplx.Pow(c, 4) + z
+		// case 3:
+		// z = cmplx.Pow(z, 5) + z
+		// }
+		// z = z*z + c
+		// z = cmplx.Pow(z, complex(imag(c), real(c))) + c + complex(r, r)
 
 		// Cycle-detection (See algorithmic explanation in README.md).
 		if (i-1)&i == 0 && i > 1 {

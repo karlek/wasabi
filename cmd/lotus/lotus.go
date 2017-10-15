@@ -1,11 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"image"
 	"image/color"
-	"image/png"
-	"math"
+	"image/jpeg"
 	"os"
+	"sync"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/karlek/profile"
@@ -15,11 +16,10 @@ import (
 )
 
 const (
-	width      = 4096
-	height     = 4096
-	iterations = 45
-	real       = 0.0
-	imag       = 0.0
+	width  = 1024
+	height = 1024
+	real   = 0.8
+	imag   = 0.0
 )
 
 func main() {
@@ -40,58 +40,71 @@ func main() {
 		{coloring.MustParseHex("#9e0142"), 1.0},
 	}
 
-	pixelToCoordinate := func(x, y int) complex128 {
-		r := 4*(float64(x)/width+real) - 2
-		i := 4*(float64(y)/height+imag) - 2
+	pixelToCoordinate := func(frac *fractal.Fractal, x, y int) complex128 {
+		r := 2 / frac.Zoom * (2*(float64(x)/width+real) - 1)
+		i := 2 / frac.Zoom * (2*(float64(y)/height+imag) - 1)
 		return complex(r, i)
 	}
 
-	img := image.NewRGBA(image.Rect(0, 0, width, height))
-	frac := &fractal.Fractal{
-		Width:      width,
-		Height:     height,
-		Iterations: iterations,
-		Zoom:       1,
-		Bailout:    4,
-	}
-
-	// z := complex(0, 0i)
-	c := complex(-0.0, -math.Sqrt(1.00))
+	z := complex(0, 0i)
+	// c := complex(-0.0, -math.Sqrt(1.00))
 
 	// maxDist := -1.0
-	for i := 0; i < width; i++ {
-		for j := 0; j <= height/2; j++ {
-			// c := pixelToCoordinate(i, j)
-			z := pixelToCoordinate(i, j)
-
-			// escapesIn := mandel.FieldLinesEscapes(z, c, 1e3, frac)
-			escapesIn := mandel.Escapes(z, c, frac)
-			// dist := mandel.OrbitTrap(z, c, z, frac)
-			if escapesIn == 0 {
-				continue
-			}
-			// if dist == 1e9 {
-			// 	continue
-			// }
-			col := keypoints.GetInterpolatedColorFor(float64(escapesIn) / float64(iterations))
-			// fmt.Println(dist)
-			// col := keypoints.GetInterpolatedColorFor(float64(dist) / 2)
-			// fmt.Println(float64(dist) / 4)
-			// maxDist = math.Max(dist, maxDist)
-			r, g, b := col.RGB255()
-			rgba := color.RGBA{r, g, b, 255}
-			img.SetRGBA(j, i, rgba)
-			img.SetRGBA(height-j, i, rgba)
+	var frame int64
+	var max int64 = 235
+	for frame = 1; frame < 3*max; frame++ {
+		img := image.NewRGBA(image.Rect(0, 0, width, height))
+		wg := new(sync.WaitGroup)
+		wg.Add(height)
+		var iterations int64 = 145
+		frac := &fractal.Fractal{
+			Width:      width,
+			Height:     height,
+			Iterations: iterations,
+			Zoom:       float64(frame),
+			Bailout:    1e10,
 		}
-	}
-	// fmt.Println(maxDist)
-	f, err := os.Create("a.png")
-	if err != nil {
-		logrus.Fatalln(err)
-	}
-	defer f.Close()
-	err = png.Encode(f, img)
-	if err != nil {
-		logrus.Fatalln(err)
+
+		for i := 0; i < width; i++ {
+			go func(i int, frac *fractal.Fractal, img *image.RGBA, wg *sync.WaitGroup) {
+				for j := 0; j <= height; j++ {
+					// c := pixelToCoordinate(i, j)
+					c := pixelToCoordinate(frac, i, j)
+
+					// escapesIn := mandel.FieldLinesEscapes(z, c, 1e+3, frac)
+					escapesIn := mandel.Escapes(float64(frame)/float64(max), z, c, frac)
+					// dist := mandel.OrbitTrap(z, c, z, frac)
+					if escapesIn == 0 {
+						continue
+					}
+					// if escapesIn == 0 || escapesIn == iterations {
+					// 	continue
+					// }
+					// if dist == 1e9 {
+					// 	continue
+					// }
+					col := keypoints.GetInterpolatedColorFor(float64(escapesIn) / float64(iterations))
+					// fmt.Println(dist)
+					// col := keypoints.GetInterpolatedColorFor(float64(dist) / 2)
+					// fmt.Println(float64(dist) / 4)
+					// maxDist = math.Max(dist, maxDist)
+					r, g, b := col.RGB255()
+					rgba := color.RGBA{r, g, b, 255}
+					img.SetRGBA(i, j, rgba)
+				}
+				wg.Done()
+			}(i, frac, img, wg)
+		}
+		wg.Wait()
+		// fmt.Println(maxDist)
+		f, err := os.Create(fmt.Sprintf("%04d.jpg", frame))
+		if err != nil {
+			logrus.Fatalln(err)
+		}
+		defer f.Close()
+		err = jpeg.Encode(f, img, &jpeg.Options{Quality: 90})
+		if err != nil {
+			logrus.Fatalln(err)
+		}
 	}
 }

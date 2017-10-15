@@ -3,12 +3,7 @@ package plot
 import (
 	"image"
 	"image/color"
-	"image/jpeg"
-	"image/png"
 	"math"
-	"os"
-	"reflect"
-	"runtime"
 	"sync"
 
 	"github.com/karlek/wasabi/fractal"
@@ -17,31 +12,34 @@ import (
 )
 
 var (
-	importance histo.Histo
+	importance histo.Histo // Importance map of the sampling.
 )
 
+// TODO(_): Implement orbit trapping capabilities.
 func Trap(img *image.RGBA, trapPath string, r, g, b histo.Histo) {
 
 }
 
-// func PlotImp(width, height int, filePng, fileJpg bool) (err error) {
-// 	fscale := func(v, max float64) float64 {
-// 		return math.Min(((1 - math.Exp(-1*v)) / (1 - math.Exp(-1*max)) * 255), 255)
-// 	}
-// 	img := image.NewRGBA(image.Rect(0, 0, width, height))
+// TODO(_): Rewrite importance mapping.
+func Importance(width, height int, filePng, fileJpg bool) (err error) {
+	// 	fscale := func(v, max float64) float64 {
+	// 		return math.Min(((1 - math.Exp(-1*v)) / (1 - math.Exp(-1*max)) * 255), 255)
+	// 	}
+	// 	img := image.NewRGBA(image.Rect(0, 0, width, height))
 
-// 	impMax := histo.Max(importance)
-// 	for x, col := range importance {
-// 		for y, v := range col {
-// 			if importance[x][y] == 0 {
-// 				continue
-// 			}
-// 			c := uint8(fscale(v, impMax))
-// 			img.SetRGBA(y, x, color.RGBA{c, c, c, 255})
-// 		}
-// 	}
-// 	return Render(img, filePng, fileJpg, "importance")
-// }
+	// 	impMax := histo.Max(importance)
+	// 	for x, col := range importance {
+	// 		for y, v := range col {
+	// 			if importance[x][y] == 0 {
+	// 				continue
+	// 			}
+	// 			c := uint8(fscale(v, impMax))
+	// 			img.SetRGBA(y, x, color.RGBA{c, c, c, 255})
+	// 		}
+	// 	}
+	// 	return Render(img, filePng, fileJpg, "importance")
+	return
+}
 
 // Plot visualizes the histograms values as an image. It equalizes the
 // histograms with a color scaling function to emphazise hidden features.
@@ -109,31 +107,4 @@ func value(f func(float64, float64) float64, v, max, factor, exposure float64) f
 // scale equalizes the histogram distribution for each value.
 func scale(f func(float64, float64) float64, max, factor, exposure float64) float64 {
 	return (255 * exposure) / f(max, factor)
-}
-
-// Render creates an output image file.
-func Render(img image.Image, filePng, fileJpg bool, filename string) (err error) {
-	enc := func(img image.Image, filename string) (err error) {
-		file, err := os.Create(filename)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-		if filePng {
-			return png.Encode(file, img)
-		}
-		return jpeg.Encode(file, img, &jpeg.Options{Quality: 100})
-	}
-
-	if filePng {
-		filename += ".png"
-	} else if fileJpg {
-		filename += ".jpg"
-	}
-	return enc(img, filename)
-}
-
-// getFunctionName returns the name of a function as string.
-func getFunctionName(i interface{}) string {
-	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }
