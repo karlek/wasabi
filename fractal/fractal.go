@@ -12,28 +12,13 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 )
 
-type Point struct {
-	Z, C complex128
-}
-
-type Orbit struct {
-	Points    []Point
-	z         complex128
-	Dist      float64
-	PointTrap complex128
-}
-
-func NewOrbitTrap(points []Point, pointTrap complex128) *Orbit {
-	return &Orbit{Points: points, PointTrap: pointTrap, Dist: 1e6}
-}
-
 type Fractal struct {
 	Width, Height int
 	R, G, B       histo.Histo
 	Method        *coloring.Coloring
 	// Fractal specific.
 	Iterations int64
-	Plane      func(Point) complex128
+	Plane      func(complex128, complex128) complex128
 	Func       func(complex128, complex128, complex128) complex128
 	Register   func(complex128, complex128, *Orbit, *Fractal) int64
 	Coef       complex128
@@ -53,7 +38,7 @@ func New(width, height int,
 	method *coloring.Coloring,
 	coef complex128,
 	bailout float64,
-	plane func(Point) complex128,
+	plane func(complex128, complex128) complex128,
 	f func(complex128, complex128, complex128) complex128,
 	zoom, offsetReal, offsetImag float64,
 	seed int64,
@@ -109,12 +94,13 @@ func NewStd(register func(complex128, complex128, *Orbit, *Fractal) int64) *Frac
 		register,
 		20)
 }
-func Zrzi(p Point) complex128 { return complex(real(p.Z), imag(p.Z)) }
-func Zrcr(p Point) complex128 { return complex(real(p.Z), real(p.C)) }
-func Zrci(p Point) complex128 { return complex(real(p.Z), imag(p.C)) }
-func Crci(p Point) complex128 { return complex(real(p.C), imag(p.C)) }
-func Crzi(p Point) complex128 { return complex(real(p.C), imag(p.Z)) }
-func Zici(p Point) complex128 { return complex(imag(p.Z), imag(p.C)) }
+
+func Zrzi(z complex128, c complex128) complex128 { return complex(real(z), imag(z)) }
+func Zrcr(z complex128, c complex128) complex128 { return complex(real(z), real(c)) }
+func Zrci(z complex128, c complex128) complex128 { return complex(real(z), imag(c)) }
+func Crci(z complex128, c complex128) complex128 { return complex(real(c), imag(c)) }
+func Crzi(z complex128, c complex128) complex128 { return complex(real(c), imag(z)) }
+func Zici(z complex128, c complex128) complex128 { return complex(imag(z), imag(c)) }
 
 func (frac *Fractal) String() string {
 	var buf bytes.Buffer // A Buffer needs no initialization.

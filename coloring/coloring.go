@@ -82,7 +82,6 @@ func NewColoring(base color.RGBA, mode Type, grad Gradient, ranges []float64) *C
 	if mode == IterationCount && len(grad) != len(ranges) {
 		panic("number of colors and ranges mismatch")
 	}
-	keys := make([]int, len(ranges)+1)
 	var keypoints GradientTable
 	if mode == OrbitLength {
 		if base.A == 0 {

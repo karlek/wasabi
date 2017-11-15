@@ -70,7 +70,7 @@ func FillHistograms(frac *fractal.Fractal, workers int) float64 {
 // random point in it's domain and iterating it a number of times to see if it
 // converges or diverges.
 func arbitrary(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG, share int64, wg *sync.WaitGroup, bar *barcli.Bar) {
-	orbit := fractal.NewOrbitTrap(make([]fractal.Point, frac.Iterations), complex(-1.14, 0))
+	orbit := fractal.NewOrbitTrap(make([]complex128, frac.Iterations), complex(-1.14, 0))
 	var z, c complex128
 
 	var total, i int64
@@ -144,7 +144,7 @@ outer:
 }
 
 func iterative(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG, share int64, wg *sync.WaitGroup, bar *barcli.Bar) {
-	orbit := fractal.NewOrbitTrap(make([]fractal.Point, frac.Iterations), complex(0, 0))
+	orbit := fractal.NewOrbitTrap(make([]complex128, frac.Iterations), complex(0, 0))
 	var total int64
 	z := complex(0, 0)
 	c := complex(0, 0)
@@ -211,8 +211,8 @@ func registerOrbit(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) int64 
 	return sum
 }
 
-func registerPoint(p fractal.Point, orbit *fractal.Orbit, frac *fractal.Fractal, red, green, blue float64) int64 {
-	if z, ok := point(p, frac); ok {
+func registerPoint(z complex128, orbit *fractal.Orbit, frac *fractal.Fractal, red, green, blue float64) int64 {
+	if z, ok := point(frac.Plane(z, orbit.C), frac); ok {
 		frac.R[z.X][z.Y] += red
 		frac.G[z.X][z.Y] += green
 		frac.B[z.X][z.Y] += blue
@@ -221,15 +221,15 @@ func registerPoint(p fractal.Point, orbit *fractal.Orbit, frac *fractal.Fractal,
 	return 0
 }
 
-func point(p fractal.Point, frac *fractal.Fractal) (image.Point, bool) {
+func point(c complex128, frac *fractal.Fractal) (image.Point, bool) {
 	// Convert the 4-d point to a pixel coordinate.
-	c := ptoc(frac.Plane(p), frac)
+	p := ptoc(c, frac)
 
 	// Ignore points outside image.
-	if c.X >= frac.Width || c.Y >= frac.Height || c.X < 0 || c.Y < 0 {
-		return c, false
+	if p.X >= frac.Width || p.Y >= frac.Height || p.X < 0 || p.Y < 0 {
+		return p, false
 	}
-	return c, true
+	return p, true
 }
 
 // ptoc converts a point from the complex function to a pixel coordinate.

@@ -167,7 +167,7 @@ func parseFunctionFlag(f string) func(float64, float64) float64 {
 	return plot.Exp
 }
 
-func parsePlane(plane string) func(fractal.Point) complex128 {
+func parsePlane(plane string) func(complex128, complex128) complex128 {
 	// Save the point.
 	switch strings.ToLower(plane) {
 	case "zrzi":

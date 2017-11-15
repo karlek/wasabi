@@ -162,7 +162,7 @@ func FieldLines(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) in
 		}
 		// }
 
-		orbit.Points[i] = fractal.Point{Z: z, C: c}
+		orbit.Points[i] = z
 		zp = z
 	}
 	// This point converges; assumed under the number of iterations.
@@ -211,7 +211,7 @@ func Escaped(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int64
 		}
 
 		orbit.Dist = math.Min(orbit.Dist, abs(z-orbit.PointTrap))
-		orbit.Points[i] = fractal.Point{Z: z, C: c}
+		orbit.Points[i] = z
 	}
 	// This point converges; assumed under the number of iterations.
 	return -1
@@ -240,7 +240,7 @@ func Converged(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int
 			return -1
 		}
 
-		orbit.Points[i] = fractal.Point{Z: z, C: c}
+		orbit.Points[i] = z
 	}
 	// This point converges; assumed under the number of iterations. Since it's
 	// the anti-buddhabrot we register the orbit.
@@ -268,7 +268,7 @@ func Primitive(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int
 			return i
 		}
 		// Save the point.
-		orbit.Points[i] = fractal.Point{Z: z, C: c}
+		orbit.Points[i] = z
 	}
 	// This point converges; assumed under the number of iterations.
 	// Since it's the primitive brot we register the orbit.

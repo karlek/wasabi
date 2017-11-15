@@ -17,7 +17,6 @@ import (
 
 	"github.com/karlek/wasabi/blueprint"
 	"github.com/karlek/wasabi/buddha"
-	"github.com/karlek/wasabi/coloring"
 	"github.com/karlek/wasabi/fractal"
 	"github.com/karlek/wasabi/histo"
 	"github.com/karlek/wasabi/plot"
@@ -46,15 +45,13 @@ func main() {
 }
 
 func renderBuddha() (err error) {
-	// Create coloring scheme for the buddhabrot rendering.
-	var grad coloring.Gradient
-
 	if !silent {
 		logrus.Println("[.] Initializing.")
 	}
 	var frac *fractal.Fractal
 	var ren *render.Render
 
+	var blue *blueprint.Blueprint
 	if blueprintPath != "" {
 		blue, err := blueprint.Parse(blueprintPath)
 		if err != nil {
@@ -89,7 +86,7 @@ func renderBuddha() (err error) {
 
 	if factor == -1 {
 		// factor = 0.01 / tries
-		factor = ren.OrbitRatio / (1000 * tries)
+		factor = ren.OrbitRatio / (1000 * blue.Tries)
 	}
 
 	ren.Exposure = exposure
