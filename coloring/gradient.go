@@ -78,7 +78,12 @@ func (g *Gradient) AddColor(c color.Color) {
 
 // This table contains the "keypoints" of the colorgradient you want to generate.
 // The position of each keypoint has to live in the range [0,1]
-type GradientTable []struct {
+type GradientTable struct {
+	Items []Item
+	Base  colorful.Color
+}
+
+type Item struct {
 	Col colorful.Color
 	Pos float64
 }
@@ -87,9 +92,12 @@ type GradientTable []struct {
 // the two colors around `t`.
 // Note: It relies heavily on the fact that the gradient keypoints are sorted.
 func (self GradientTable) GetInterpolatedColorFor(t float64) colorful.Color {
-	for i := 0; i < len(self)-1; i++ {
-		c1 := self[i]
-		c2 := self[i+1]
+	for i := 0; i < len(self.Items)-1; i++ {
+		c1 := self.Items[i]
+		c2 := self.Items[i+1]
+		if c1.Pos > t {
+			return self.Base
+		}
 		if c1.Pos <= t && t <= c2.Pos {
 			// We are in between c1 and c2. Go blend them!
 			t := (t - c1.Pos) / (c2.Pos - c1.Pos)
@@ -97,8 +105,9 @@ func (self GradientTable) GetInterpolatedColorFor(t float64) colorful.Color {
 		}
 	}
 
+	// fmt.Println(self.Items)
 	// Nothing found? Means we're at (or past) the last gradient keypoint.
-	return self[len(self)-1].Col
+	return self.Items[len(self.Items)-1].Col
 }
 
 // This is a very nice thing Golang forces you to do!

@@ -61,13 +61,17 @@ func Plot(ren *render.Render, frac *fractal.Fractal) {
 func plotCol(wg *sync.WaitGroup, x int, col []float64, ren *render.Render, frac *fractal.Fractal, rMax, bMax, gMax float64) {
 	for y := range col {
 		// We skip to plot the black points for faster rendering. A side
-		// effect is that rendering png images will have a transpafract
+		// effect is that rendering png images will have a transparent
 		// background.
 		if frac.R[x][y] == 0 &&
 			frac.G[x][y] == 0 &&
 			frac.B[x][y] == 0 {
 			continue
 		}
+		// a := math.Max(math.Max(value(ren.F, frac.R[x][y], rMax, ren.Factor, ren.Exposure),
+		// 	value(ren.F, frac.G[x][y], gMax, ren.Factor, ren.Exposure)),
+		// 	value(ren.F, frac.B[x][y], bMax, ren.Factor, ren.Exposure))
+
 		c := color.RGBA{
 			uint8(value(ren.F, frac.R[x][y], rMax, ren.Factor, ren.Exposure)),
 			uint8(value(ren.F, frac.G[x][y], gMax, ren.Factor, ren.Exposure)),

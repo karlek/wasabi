@@ -8,19 +8,19 @@ import (
 	"image/jpeg"
 	"image/png"
 	"os"
-	"reflect"
-	"runtime"
 	"text/tabwriter"
+
+	"github.com/karlek/wasabi/util"
 )
 
 // Render contains information about how an image should be rendered.
 type Render struct {
-	Image    *image.RGBA                    // The image to be rendered.
-	Factor   float64                        // Multiplicative change in value.
-	Exposure float64                        // Additative change in value.
-	Points   int                            // Number of points calculated.
-	F        func(float64, float64) float64 // Function to calculate the value of all pixels.
-	FName    string                         // Name of the function.
+	Image      *image.RGBA                    // The image to be rendered.
+	Factor     float64                        // Multiplicative change in value.
+	Exposure   float64                        // Additative change in value.
+	Points     int                            // Number of points calculated.
+	F          func(float64, float64) float64 // Function to calculate the value of all pixels.
+	OrbitRatio float64                        // Ugly fix.
 }
 
 // New returns a new render for fractals.
@@ -28,14 +28,8 @@ func New(width, height int, f func(float64, float64) float64, factor, exposure f
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
 	return &Render{Image: img,
 		F:        f,
-		FName:    getFunctionName(f),
 		Factor:   factor,
 		Exposure: exposure}
-}
-
-// getFunctionName returns the name of the function for easier debugging.
-func getFunctionName(i interface{}) string {
-	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }
 
 // String prints a string representation of the Render struct.
@@ -43,7 +37,7 @@ func (ren *Render) String() string {
 	var buf bytes.Buffer // A Buffer needs no initialization.
 	w := tabwriter.NewWriter(&buf, 0, 0, 1, ' ', 0)
 	fmt.Fprintf(w, "Dimension:\t%v\n", ren.Image.Bounds())
-	fmt.Fprintf(w, "Function:\t%s\n", getFunctionName(ren.F))
+	fmt.Fprintf(w, "Function:\t%s\n", util.FunctionName(ren.F))
 	fmt.Fprintf(w, "Factor:\t%f\n", ren.Factor)
 	fmt.Fprintf(w, "Exposure:\t%f\n", ren.Exposure)
 	fmt.Fprintf(w, "Points:\t%d\n", ren.Points)

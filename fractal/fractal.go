@@ -4,23 +4,26 @@ import (
 	"bytes"
 	"fmt"
 	"image/color"
-	"reflect"
-	"runtime"
 	"text/tabwriter"
 
 	"github.com/karlek/wasabi/coloring"
 	"github.com/karlek/wasabi/histo"
+	"github.com/karlek/wasabi/util"
 	"github.com/lucasb-eyer/go-colorful"
 )
 
+type Point struct {
+	Z, C complex128
+}
+
 type Orbit struct {
-	Points    []complex128
+	Points    []Point
 	z         complex128
 	Dist      float64
 	PointTrap complex128
 }
 
-func NewOrbitTrap(points []complex128, pointTrap complex128) *Orbit {
+func NewOrbitTrap(points []Point, pointTrap complex128) *Orbit {
 	return &Orbit{Points: points, PointTrap: pointTrap, Dist: 1e6}
 }
 
@@ -30,8 +33,9 @@ type Fractal struct {
 	Method        *coloring.Coloring
 	// Fractal specific.
 	Iterations int64
-	Plane      func(complex128, complex128) complex128
-	Func       func(complex128, complex128, *Orbit, *Fractal) int64
+	Plane      func(Point) complex128
+	Func       func(complex128, complex128, complex128) complex128
+	Register   func(complex128, complex128, *Orbit, *Fractal) int64
 	Coef       complex128
 	Bailout    float64
 	Zoom       float64
@@ -44,25 +48,73 @@ type Fractal struct {
 }
 
 // New returns a new render for fractals.
-func New(width, height int, iterations int64, method *coloring.Coloring, coef complex128, bailout float64, plane func(complex128, complex128) complex128, zoom, offsetReal, offsetImag float64, seed int64, points int64, tries float64, f func(complex128, complex128, *Orbit, *Fractal) int64, threshold int64) *Fractal {
+func New(width, height int,
+	iterations int64,
+	method *coloring.Coloring,
+	coef complex128,
+	bailout float64,
+	plane func(Point) complex128,
+	f func(complex128, complex128, complex128) complex128,
+	zoom, offsetReal, offsetImag float64,
+	seed int64,
+	points int64,
+	tries float64,
+	register func(complex128, complex128, *Orbit, *Fractal) int64,
+	threshold int64) *Fractal {
 	r, g, b := histo.New(width, height), histo.New(width, height), histo.New(width, height)
-	return &Fractal{Width: width, Height: height, Iterations: iterations, R: r, G: g, B: b, Method: method, Coef: coef, Bailout: bailout, Plane: plane, Zoom: zoom, OffsetReal: offsetReal, OffsetImag: offsetImag, Seed: seed, Points: points, Tries: tries, Func: f, Threshold: threshold}
+	return &Fractal{
+		Width:      width,
+		Height:     height,
+		Iterations: iterations,
+		R:          r,
+		G:          g,
+		B:          b,
+		Method:     method,
+		Coef:       coef,
+		Bailout:    bailout,
+		Plane:      plane,
+		Zoom:       zoom,
+		OffsetReal: offsetReal,
+		OffsetImag: offsetImag,
+		Seed:       seed,
+		Points:     points,
+		Tries:      tries,
+		Register:   register,
+		Func:       f,
+		Threshold:  threshold}
 }
 
-func NewStd(f func(complex128, complex128, *Orbit, *Fractal) int64) *Fractal {
+func NewStd(register func(complex128, complex128, *Orbit, *Fractal) int64) *Fractal {
 	var grad coloring.Gradient
 	grad.AddColor(colorful.Color{1, 0, 0})
 	grad.AddColor(colorful.Color{0, 1, 0})
 	grad.AddColor(colorful.Color{0, 0, 1})
+
 	method := coloring.NewColoring(color.RGBA{0, 0, 0, 0}, coloring.IterationCount, grad, []float64{100 / 1e6, 0.2, 0.5})
-	return New(4096, 4096, 1e6, method, complex(1, 0), 4, zrzi, 1, 0.4, 0, 1, 80, 1e0, f, 20)
+
+	return New(
+		4096, 4096,
+		1e6,
+		method,
+		complex(1, 0),
+		4,
+		Zrzi,
+		func(z, c, _ complex128) complex128 { return z*z + c },
+		1,
+		0.4,
+		0,
+		1,
+		80,
+		1e0,
+		register,
+		20)
 }
-func zrzi(z, c complex128) complex128 { return complex(real(z), imag(z)) }
-func zrcr(z, c complex128) complex128 { return complex(real(z), real(c)) }
-func zrci(z, c complex128) complex128 { return complex(real(z), imag(c)) }
-func crci(z, c complex128) complex128 { return complex(real(c), imag(c)) }
-func crzi(z, c complex128) complex128 { return complex(real(c), imag(z)) }
-func zici(z, c complex128) complex128 { return complex(imag(z), imag(c)) }
+func Zrzi(p Point) complex128 { return complex(real(p.Z), imag(p.Z)) }
+func Zrcr(p Point) complex128 { return complex(real(p.Z), real(p.C)) }
+func Zrci(p Point) complex128 { return complex(real(p.Z), imag(p.C)) }
+func Crci(p Point) complex128 { return complex(real(p.C), imag(p.C)) }
+func Crzi(p Point) complex128 { return complex(real(p.C), imag(p.Z)) }
+func Zici(p Point) complex128 { return complex(imag(p.Z), imag(p.C)) }
 
 func (frac *Fractal) String() string {
 	var buf bytes.Buffer // A Buffer needs no initialization.
@@ -70,7 +122,7 @@ func (frac *Fractal) String() string {
 	fmt.Fprintf(w, "Dimensions:\t%d x %d\n", frac.Width, frac.Height)
 	fmt.Fprintf(w, "Method:\n%v", frac.Method)
 	fmt.Fprintf(w, "Iterations:\t%d\n", frac.Iterations)
-	fmt.Fprintf(w, "Plane:\t%v\n", getFunctionName(frac.Plane))
+	fmt.Fprintf(w, "Plane:\t%v\n", util.FunctionName(frac.Plane))
 	fmt.Fprintf(w, "Coef:\t%v\n", frac.Coef)
 	fmt.Fprintf(w, "Bail:\t%f\n", frac.Bailout)
 	fmt.Fprintf(w, "Zoom:\t%f\n", frac.Zoom)
@@ -80,9 +132,4 @@ func (frac *Fractal) String() string {
 	fmt.Fprintf(w, "Tries:\t%d\n", frac.Tries)
 	w.Flush()
 	return string(buf.Bytes())
-}
-
-// getFunctionName returns the name of a function as string.
-func getFunctionName(i interface{}) string {
-	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }
