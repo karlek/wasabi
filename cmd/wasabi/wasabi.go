@@ -39,40 +39,35 @@ func main() {
 		os.Exit(1)
 	}(inter)
 
-	if err := renderBuddha(); err != nil {
+	if flag.NArg() < 1 {
+		usage()
+		os.Exit(1)
+	}
+	if err := renderBuddha(flag.Arg(0)); err != nil {
 		logrus.Fatalln(err)
 	}
 }
 
-func renderBuddha() (err error) {
+func renderBuddha(blueprintPath string) (err error) {
 	if !silent {
 		logrus.Println("[.] Initializing.")
 	}
 	var frac *fractal.Fractal
 	var ren *render.Render
 
-	var blue *blueprint.Blueprint
-	if blueprintPath != "" {
-		blue, err := blueprint.Parse(blueprintPath)
-		if err != nil {
-			return err
-		}
-		factor = blue.Factor
-		save = blue.CacheHistograms
-		fileJpg = blue.Jpg
-		filePng = blue.Png
-		out = blue.OutputFilename
-		multiple = blue.MultipleExposures
-		ren, frac = blue.Render(), blue.Fractal()
-		draw.Draw(ren.Image, ren.Image.Bounds(), &image.Uniform{blue.Base()}, image.ZP, draw.Src)
+	blue, err := blueprint.Parse(blueprintPath)
+	if err != nil {
+		return err
 	}
-	ren.OrbitRatio = buddha.FillHistograms(frac, runtime.NumCPU())
-	if save {
-		logrus.Println("[i] Saving r, g, b channels")
-		if err := saveArt(frac); err != nil {
-			return err
-		}
-	}
+	factor = blue.Factor
+	save = blue.CacheHistograms
+	fileJpg = blue.Jpg
+	filePng = blue.Png
+	out = blue.OutputFilename
+	multiple = blue.MultipleExposures
+	ren, frac = blue.Render(), blue.Fractal()
+	draw.Draw(ren.Image, ren.Image.Bounds(), &image.Uniform{blue.Base()}, image.ZP, draw.Src)
+
 	if load {
 		if !silent {
 			logrus.Println("[-] Loading visits.")
@@ -82,6 +77,13 @@ func renderBuddha() (err error) {
 			return err
 		}
 	} else {
+		ren.OrbitRatio = buddha.FillHistograms(frac, runtime.NumCPU())
+		if save {
+			logrus.Println("[i] Saving r, g, b channels")
+			if err := saveArt(frac); err != nil {
+				return err
+			}
+		}
 	}
 
 	if factor == -1 {

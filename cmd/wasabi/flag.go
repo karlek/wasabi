@@ -35,9 +35,6 @@ var (
 
 	// Silent flag
 	silent bool
-
-	// Plot file path.
-	blueprintPath string
 )
 
 func init() {
@@ -49,7 +46,6 @@ func init() {
 	flag.BoolVar(&multiple, "multiple", false, "Render with many exposure settings.")
 	flag.StringVar(&out, "out", "a", "output filename. Image file type will be suffixed.")
 	flag.StringVar(&fun, "function", "exp", "color scaling function")
-	flag.StringVar(&blueprintPath, "blueprint", "", "path to blueprint file")
 	flag.Float64Var(&exposure, "exposure", 1.0, "over exposure")
 	flag.Float64Var(&factor, "factor", -1, "factor")
 	flag.Usage = usage
@@ -57,7 +53,7 @@ func init() {
 
 // usage prints usage and flags for the program.
 func usage() {
-	fmt.Fprintf(os.Stderr, "%s [OPTIONS],,,\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "%s BLUEPRINT_FILE [OPTIONS],,,\n", os.Args[0])
 	flag.PrintDefaults()
 }
 
