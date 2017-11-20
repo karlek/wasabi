@@ -107,33 +107,6 @@ func Escapes(z complex128, bail float64) bool {
 	return x*x+y*y >= bail
 }
 
-func Escapado(skip float64, z, c complex128, frac *fractal.Fractal) int64 {
-	// We ignore all values that we know are in the bulb, and will therefore
-	// converge.
-	if isInBulb(c) {
-		// return frac.Iterations
-	}
-
-	// Saved value for cycle-detection.
-	var bfract complex128
-
-	// See if the complex function diverges before we reach our iteration count.
-	var i int64
-	for i = 0; i < frac.Iterations; i++ {
-		z = frac.Func(z, c, frac.Coef)
-		if IsCycle(z, &bfract, i) {
-			return frac.Iterations
-		}
-		// This point diverges, so we all the preceeding points are interesting
-		// and will be registered.
-		if Escapes(z, frac.Bailout) {
-			return i
-		}
-	}
-	// This point converges; assumed under the number of iterations.
-	return frac.Iterations
-}
-
 func FieldLines(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int64 {
 	zp := complex(0, 0)
 	g := 10000.0
@@ -166,7 +139,7 @@ func FieldLines(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) in
 		zp = z
 	}
 	// This point converges; assumed under the number of iterations.
-	return i
+	return -1
 }
 
 func abs(c complex128) float64 {
@@ -209,8 +182,6 @@ func Escaped(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int64
 		if Escapes(z, frac.Bailout) {
 			return i
 		}
-
-		orbit.Dist = math.Min(orbit.Dist, abs(z-orbit.PointTrap))
 		orbit.Points[i] = z
 	}
 	// This point converges; assumed under the number of iterations.
