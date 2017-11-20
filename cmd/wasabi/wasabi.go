@@ -59,13 +59,17 @@ func renderBuddha(blueprintPath string) (err error) {
 	if err != nil {
 		return err
 	}
-	factor = blue.Factor
-	save = blue.CacheHistograms
-	fileJpg = blue.Jpg
-	filePng = blue.Png
-	out = blue.OutputFilename
-	multiple = blue.MultipleExposures
+	if factor == -1 {
+		// factor = 0.01 / tries
+		// factor = ren.OrbitRatio / (1000 * blue.Tries)
+		factor = blue.Factor
+	}
+
+	if out == "" {
+		out = blue.OutputFilename
+	}
 	ren, frac = blue.Render(), blue.Fractal()
+	frac.Theta = theta
 	draw.Draw(ren.Image, ren.Image.Bounds(), &image.Uniform{blue.Base()}, image.ZP, draw.Src)
 
 	if load {
@@ -78,17 +82,12 @@ func renderBuddha(blueprintPath string) (err error) {
 		}
 	} else {
 		ren.OrbitRatio = buddha.FillHistograms(frac, runtime.NumCPU())
-		if save {
+		if blue.CacheHistograms {
 			logrus.Println("[i] Saving r, g, b channels")
 			if err := saveArt(frac); err != nil {
 				return err
 			}
 		}
-	}
-
-	if factor == -1 {
-		// factor = 0.01 / tries
-		factor = ren.OrbitRatio / (1000 * blue.Tries)
 	}
 
 	ren.Exposure = exposure
@@ -105,11 +104,11 @@ func renderBuddha(blueprintPath string) (err error) {
 	}
 
 	plot.Plot(ren, frac)
-	if err := ren.Render(filePng, fileJpg, out); err != nil {
+	if err := ren.Render(blue.Png, blue.Jpg, out); err != nil {
 		return err
 	}
 
-	if load && multiple {
+	if load && blue.MultipleExposures {
 		if err := multipleExposures(ren, frac); err != nil {
 			return err
 		}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"image/color"
+	"math"
 	"text/tabwriter"
 
 	"github.com/karlek/wasabi/coloring"
@@ -24,6 +25,7 @@ type Fractal struct {
 	Coef       complex128
 	Bailout    float64
 	Zoom       float64
+	Theta      float64
 	OffsetReal float64
 	OffsetImag float64
 	Seed       int64
@@ -45,6 +47,7 @@ func New(width, height int,
 	points int64,
 	tries float64,
 	register func(complex128, complex128, *Orbit, *Fractal) int64,
+	theta float64,
 	threshold int64) *Fractal {
 	r, g, b := histo.New(width, height), histo.New(width, height), histo.New(width, height)
 	return &Fractal{
@@ -66,6 +69,7 @@ func New(width, height int,
 		Tries:      tries,
 		Register:   register,
 		Func:       f,
+		Theta:      theta,
 		Threshold:  threshold}
 }
 
@@ -92,6 +96,7 @@ func NewStd(register func(complex128, complex128, *Orbit, *Fractal) int64) *Frac
 		80,
 		1e0,
 		register,
+		math.Pi,
 		20)
 }
 

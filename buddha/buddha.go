@@ -9,6 +9,7 @@ import (
 	"time"
 
 	rand7i "github.com/7i/rand"
+	"github.com/gonum/matrix/mat64"
 
 	"github.com/karlek/progress/barcli"
 	"github.com/karlek/wasabi/coloring"
@@ -73,6 +74,19 @@ func arbitrary(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG
 	orbit := fractal.NewOrbitTrap(make([]complex128, frac.Iterations), complex(-1.14, 0))
 	var z, c complex128
 
+	rotX = mat64.NewDense(4, 4, []float64{
+		math.Cos(frac.Theta), math.Sin(frac.Theta), 0, 0,
+		-math.Sin(frac.Theta), math.Cos(frac.Theta), 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1,
+	})
+
+	rotSomething = mat64.NewDense(4, 4, []float64{
+		-1, 0, 0, 0,
+		0, -1, 0, 0,
+		0, 0, math.Cos(frac.Theta), -math.Sin(frac.Theta),
+		0, 0, math.Sin(frac.Theta), math.Cos(frac.Theta),
+	})
 	var total, i int64
 	for i = 0; i < share; i++ {
 		// Increase progress bar.
@@ -81,6 +95,7 @@ func arbitrary(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG
 		// Our random point which, hopefully, will create an orbit!
 		// z = rng.Complex128Go()
 		c = rng.Complex128Go()
+		orbit.C = c
 
 		length := Attempt(z, c, orbit, frac)
 		total += length
@@ -212,7 +227,7 @@ func registerOrbit(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) int64 
 }
 
 func registerPoint(z complex128, orbit *fractal.Orbit, frac *fractal.Fractal, red, green, blue float64) int64 {
-	if z, ok := point(frac.Plane(z, orbit.C), frac); ok {
+	if z, ok := point(z, orbit.C, frac); ok {
 		frac.R[z.X][z.Y] += red
 		frac.G[z.X][z.Y] += green
 		frac.B[z.X][z.Y] += blue
@@ -221,9 +236,9 @@ func registerPoint(z complex128, orbit *fractal.Orbit, frac *fractal.Fractal, re
 	return 0
 }
 
-func point(c complex128, frac *fractal.Fractal) (image.Point, bool) {
+func point(z, c complex128, frac *fractal.Fractal) (image.Point, bool) {
 	// Convert the 4-d point to a pixel coordinate.
-	p := ptoc(c, frac)
+	p := ptoc(z, c, frac)
 
 	// Ignore points outside image.
 	if p.X >= frac.Width || p.Y >= frac.Height || p.X < 0 || p.Y < 0 {
@@ -232,12 +247,22 @@ func point(c complex128, frac *fractal.Fractal) (image.Point, bool) {
 	return p, true
 }
 
+var rotX *mat64.Dense
+var rotSomething *mat64.Dense
+
 // ptoc converts a point from the complex function to a pixel coordinate.
 //
 // Stands for point to coordinate, which is actually a really shitty name
 // because of it's ambiguous character haha.
-func ptoc(c complex128, frac *fractal.Fractal) (p image.Point) {
-	r, i := real(c), imag(c)
+func ptoc(z, c complex128, frac *fractal.Fractal) (p image.Point) {
+	// r, i := real(z), imag(z)
+
+	var rotVec mat64.Vector
+	x := mat64.NewVector(4, []float64{real(z), imag(z), real(c), imag(c)})
+	rotVec.MulVec(rotSomething, x)
+
+	r := rotVec.At(0, 0)
+	i := rotVec.At(2, 0)
 
 	p.X = int(frac.Zoom*float64(frac.Width/4)*(r+frac.OffsetReal) + float64(frac.Width)/2.0)
 	p.Y = int(frac.Zoom*float64(frac.Height/4)*(i+frac.OffsetImag) + float64(frac.Height)/2.0)
@@ -256,7 +281,7 @@ func registerPaths(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) int64 
 	bresPoints := make([]image.Point, 0, frac.Points)
 	for _, p := range orbit.Points[:it] {
 		// Convert the complex point to a pixel coordinate.
-		q, ok := point(p, frac)
+		q, ok := point(p, orbit.C, frac)
 		if !ok {
 			continue
 		}

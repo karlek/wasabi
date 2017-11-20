@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math"
 	"os"
 
 	"github.com/Sirupsen/logrus"
@@ -35,6 +36,8 @@ var (
 
 	// Silent flag
 	silent bool
+
+	theta float64
 )
 
 func init() {
@@ -48,6 +51,7 @@ func init() {
 	flag.StringVar(&fun, "function", "exp", "color scaling function")
 	flag.Float64Var(&exposure, "exposure", 1.0, "over exposure")
 	flag.Float64Var(&factor, "factor", -1, "factor")
+	flag.Float64Var(&theta, "theta", math.Pi, "y rotation")
 	flag.Usage = usage
 }
 

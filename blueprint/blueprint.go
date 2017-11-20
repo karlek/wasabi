@@ -64,6 +64,8 @@ type Blueprint struct {
 	BaseColor Color
 	Gradient  []Color
 	Range     []float64
+
+	Theta float64
 }
 
 type Color struct {
@@ -131,6 +133,7 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 		b.PathPoints,
 		b.Tries,
 		registerMode,
+		b.Theta,
 		b.Threshold)
 }
 
