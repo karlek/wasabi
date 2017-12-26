@@ -56,7 +56,7 @@ func (ren *Render) Render(filePng, fileJpg bool, filename string) (err error) {
 		if filePng {
 			return png.Encode(file, img)
 		}
-		return jpeg.Encode(file, img, &jpeg.Options{Quality: 100})
+		return jpeg.Encode(file, img, &jpeg.Options{Quality: 75})
 	}
 
 	if filePng {
@@ -65,4 +65,9 @@ func (ren *Render) Render(filePng, fileJpg bool, filename string) (err error) {
 		filename += ".jpg"
 	}
 	return enc(ren.Image, filename)
+}
+
+func (ren *Render) Clear() {
+	width, height := ren.Image.Bounds().Size().X, ren.Image.Bounds().Size().Y
+	ren.Image = image.NewRGBA(image.Rect(0, 0, width, height))
 }

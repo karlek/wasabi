@@ -26,6 +26,7 @@ type Fractal struct {
 	Bailout    float64
 	Zoom       float64
 	Theta      float64
+	Theta2     float64
 	OffsetReal float64
 	OffsetImag float64
 	Seed       int64
@@ -103,9 +104,9 @@ func NewStd(register func(complex128, complex128, *Orbit, *Fractal) int64) *Frac
 func Zrzi(z complex128, c complex128) complex128 { return complex(real(z), imag(z)) }
 func Zrcr(z complex128, c complex128) complex128 { return complex(real(z), real(c)) }
 func Zrci(z complex128, c complex128) complex128 { return complex(real(z), imag(c)) }
-func Crci(z complex128, c complex128) complex128 { return complex(real(c), imag(c)) }
-func Crzi(z complex128, c complex128) complex128 { return complex(real(c), imag(z)) }
+func Zicr(z complex128, c complex128) complex128 { return complex(imag(z), real(c)) }
 func Zici(z complex128, c complex128) complex128 { return complex(imag(z), imag(c)) }
+func Crci(z complex128, c complex128) complex128 { return complex(real(c), imag(c)) }
 
 func (frac *Fractal) String() string {
 	var buf bytes.Buffer // A Buffer needs no initialization.
@@ -123,4 +124,10 @@ func (frac *Fractal) String() string {
 	fmt.Fprintf(w, "Tries:\t%d\n", frac.Tries)
 	w.Flush()
 	return string(buf.Bytes())
+}
+
+func (f *Fractal) Clear() {
+	f.R = histo.New(f.Width, f.Height)
+	f.G = histo.New(f.Width, f.Height)
+	f.B = histo.New(f.Width, f.Height)
 }

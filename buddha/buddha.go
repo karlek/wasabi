@@ -10,6 +10,7 @@ import (
 
 	rand7i "github.com/7i/rand"
 	"github.com/gonum/matrix/mat64"
+	colorful "github.com/lucasb-eyer/go-colorful"
 
 	"github.com/karlek/progress/barcli"
 	"github.com/karlek/wasabi/coloring"
@@ -75,15 +76,15 @@ func arbitrary(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG
 	var z, c complex128
 
 	rotX = mat64.NewDense(4, 4, []float64{
-		math.Cos(frac.Theta), math.Sin(frac.Theta), 0, 0,
-		-math.Sin(frac.Theta), math.Cos(frac.Theta), 0, 0,
+		math.Cos(frac.Theta2), math.Sin(frac.Theta2), 0, 0,
+		-math.Sin(frac.Theta2), math.Cos(frac.Theta2), 0, 0,
 		0, 0, 1, 0,
 		0, 0, 0, 1,
 	})
 
 	rotSomething = mat64.NewDense(4, 4, []float64{
-		-1, 0, 0, 0,
-		0, -1, 0, 0,
+		1, 0, 0, 0,
+		0, 1, 0, 0,
 		0, 0, math.Cos(frac.Theta), -math.Sin(frac.Theta),
 		0, 0, math.Sin(frac.Theta), math.Cos(frac.Theta),
 	})
@@ -99,9 +100,9 @@ func arbitrary(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG
 
 		length := Attempt(z, c, orbit, frac)
 		total += length
-		// if IsLongOrbit(length, frac) {
-		// 	i += searchNearby(z, c, orbit, frac, &total, bar)
-		// }
+		if IsLongOrbit(length, frac) {
+			i += searchNearby(z, c, orbit, frac, &total, bar)
+		}
 	}
 	wg.Done()
 	go func() { totChan <- total }()
@@ -113,7 +114,9 @@ func Attempt(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int64
 		return 0
 	}
 	var length int64
-	if frac.Method.Mode() == coloring.OrbitLength {
+	if frac.Method.Mode() == coloring.OrbitLength || frac.Method.Mode() == coloring.IterationCount {
+		length = registerField(it, orbit, frac)
+	} else if frac.Method.Mode() == coloring.VectorField {
 		length = registerOrbit(it, orbit, frac)
 	} else {
 		length = registerColoredOrbit(it, orbit, frac)
@@ -226,11 +229,70 @@ func registerOrbit(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) int64 
 	return sum
 }
 
+func registerField(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) int64 {
+	if it < frac.Threshold {
+		return 0
+	}
+
+	keypoints := coloring.GradientTable{}
+	var rang = []float64{
+		0.0,
+		// 0.000005,
+		// 0.05,
+		// 0.10,
+		// 0.25,
+		0.5,
+		// 0.75,
+		// 0.95,
+		// 0.99,
+		1,
+	}
+	for i := len(rang) - 1; i >= 0; i-- {
+		j := len(rang) - 1 - i
+		c := colorful.Color(frac.Method.Grad[j].(colorful.Color))
+		keypoints.Items = append(keypoints.Items, coloring.Item{c, rang[j]})
+	}
+
+	var sum, i int64
+	for i = 0; i < it-1; i++ {
+		j := i + 1
+		u, v := orbit.Points[i], orbit.Points[j]
+		ru, rv, iu, iv := real(u), real(v), imag(u), imag(v)
+		cosAlpha := (ru*rv + iu*iv) / (math.Sqrt(ru*ru+iu*iu) * math.Sqrt(rv*rv+iv*iv))
+		alpha := math.Acos(cosAlpha)
+		// fmt.Printf("%.2f\n", alpha/(2*math.Pi))
+		r, g, b, _ := keypoints.GetInterpolatedColorFor(alpha).RGBA()
+		// fmt.Println(i, it, r, g, b)
+		red, green, blue := float64(r>>8)/256, float64(g>>8)/256, float64(b>>8)/256
+		if z, ok := point(u, orbit.C, frac); ok {
+			if red != 0 {
+				frac.R[z.X][z.Y] += red
+			}
+			if green != 0 {
+				frac.G[z.X][z.Y] += green
+			}
+			if blue != 0 {
+				frac.B[z.X][z.Y] += blue
+			}
+		} else {
+			continue
+		}
+		sum += 1
+	}
+	return sum
+}
+
 func registerPoint(z complex128, orbit *fractal.Orbit, frac *fractal.Fractal, red, green, blue float64) int64 {
 	if z, ok := point(z, orbit.C, frac); ok {
-		frac.R[z.X][z.Y] += red
-		frac.G[z.X][z.Y] += green
-		frac.B[z.X][z.Y] += blue
+		if red != 0 {
+			frac.R[z.X][z.Y] += red
+		}
+		if green != 0 {
+			frac.G[z.X][z.Y] += green
+		}
+		if blue != 0 {
+			frac.B[z.X][z.Y] += blue
+		}
 		return 1
 	}
 	return 0
@@ -257,14 +319,19 @@ var rotSomething *mat64.Dense
 func ptoc(z, c complex128, frac *fractal.Fractal) (p image.Point) {
 	// r, i := real(z), imag(z)
 
-	var rotVec mat64.Vector
-	x := mat64.NewVector(4, []float64{real(z), imag(z), real(c), imag(c)})
-	rotVec.MulVec(rotSomething, x)
+	// var rotVec mat64.Vector
+	// x := mat64.NewVector(4, []float64{real(z), imag(z), real(c), imag(c)})
+	// rotVec := x
+	// rotVec.MulVec(rotX, x)
+	// rotVec.MulVec(rotSomething, &rotVec)
 
-	r := rotVec.At(0, 0)
-	i := rotVec.At(2, 0)
+	// tmp := frac.Plane(complex(rotVec.At(0, 0), rotVec.At(1, 0)),
+	// 	complex(rotVec.At(2, 0), rotVec.At(3, 0)))
+	tmp := frac.Plane(z, c)
+	r, i := real(tmp), imag(tmp)
 
-	p.X = int(frac.Zoom*float64(frac.Width/4)*(r+frac.OffsetReal) + float64(frac.Width)/2.0)
+	ratio := float64(frac.Width) / float64(frac.Height)
+	p.X = int(frac.Zoom*float64(frac.Width/4)*(1/ratio)*(r+frac.OffsetReal) + float64(frac.Width)/2.0)
 	p.Y = int(frac.Zoom*float64(frac.Height/4)*(i+frac.OffsetImag) + float64(frac.Height)/2.0)
 
 	return p

@@ -9,10 +9,10 @@ import (
 	_ "image/png"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"runtime"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/faiface/pixel/pixelgl"
 	"github.com/pkg/profile"
 
 	"github.com/karlek/wasabi/blueprint"
@@ -21,15 +21,11 @@ import (
 	"github.com/karlek/wasabi/histo"
 	"github.com/karlek/wasabi/plot"
 	"github.com/karlek/wasabi/render"
-	"github.com/karlek/wasabi/util"
 )
 
 func main() {
 	defer profile.Start(profile.CPUProfile).Stop()
 	runtime.GOMAXPROCS(runtime.NumCPU())
-
-	flag.Parse()
-	parseFunctionFlag()
 
 	// Handle interrupts as fails, so we can chain with an image viewer.
 	inter := make(chan os.Signal, 1)
@@ -39,38 +35,55 @@ func main() {
 		os.Exit(1)
 	}(inter)
 
+	// Parse flag and demand blueprint file.
+	flag.Parse()
+	parseFunctionFlag()
 	if flag.NArg() < 1 {
 		usage()
 		os.Exit(1)
 	}
-	if err := renderBuddha(flag.Arg(0)); err != nil {
-		logrus.Fatalln(err)
+
+	// Live render.
+	if interactive {
+		pixelgl.Run(renderRun)
+		return
 	}
+
+	// Render blueprint.
+	if err := renderBuddha(flag.Arg(0)); err != nil {
+		logrus.Warnln(err)
+	}
+}
+
+func initialize(blueprintPath string) (frac *fractal.Fractal, ren *render.Render, blue *blueprint.Blueprint, err error) {
+	blue, err = blueprint.Parse(blueprintPath)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	frac, ren = blue.Fractal(), blue.Render()
+	draw.Draw(ren.Image, ren.Image.Bounds(), &image.Uniform{blue.Base()}, image.ZP, draw.Src)
+	return frac, ren, blue, nil
+
+	// if factor == -1 {
+	// 	// factor = 0.01 / tries
+	// 	// factor = ren.OrbitRatio / (1000 * blue.Tries)
+	// 	factor = blue.Factor
+	// }
+
+	// if out == "" {
+	// 	out = blue.OutputFilename
+	// }
+	// frac.Theta = theta
 }
 
 func renderBuddha(blueprintPath string) (err error) {
 	if !silent {
 		logrus.Println("[.] Initializing.")
 	}
-	var frac *fractal.Fractal
-	var ren *render.Render
-
-	blue, err := blueprint.Parse(blueprintPath)
+	frac, ren, blue, err := initialize(blueprintPath)
 	if err != nil {
 		return err
 	}
-	if factor == -1 {
-		// factor = 0.01 / tries
-		// factor = ren.OrbitRatio / (1000 * blue.Tries)
-		factor = blue.Factor
-	}
-
-	if out == "" {
-		out = blue.OutputFilename
-	}
-	ren, frac = blue.Render(), blue.Fractal()
-	frac.Theta = theta
-	draw.Draw(ren.Image, ren.Image.Bounds(), &image.Uniform{blue.Base()}, image.ZP, draw.Src)
 
 	if load {
 		if !silent {
@@ -89,10 +102,16 @@ func renderBuddha(blueprintPath string) (err error) {
 			}
 		}
 	}
-
-	ren.Exposure = exposure
-	ren.Factor = factor
-	ren.F = f
+	if factor != -1 {
+		ren.Factor = factor
+	}
+	// div := (3 * 10 * ren.OrbitRatio * frac.Tries * float64((histo.Max(frac.R) + histo.Max(frac.G) + histo.Max(frac.B))))
+	// div := ren.OrbitRatio * frac.Tries
+	// fmt.Println(div)
+	// ren.Factor = ren.OrbitRatio / (10 * frac.Tries)
+	// ren.Exposure = exposure
+	// ren.Factor = factor
+	// ren.F = f
 
 	if !silent {
 		fmt.Println(ren)
@@ -111,49 +130,6 @@ func renderBuddha(blueprintPath string) (err error) {
 	if load && blue.MultipleExposures {
 		if err := multipleExposures(ren, frac); err != nil {
 			return err
-		}
-	}
-	return nil
-}
-
-func multipleExposures(ren *render.Render, frac *fractal.Fractal) (err error) {
-	functions := []func(float64, float64) float64{
-		plot.Log,
-		plot.Exp,
-		// plot.Lin,
-		// plot.Sqrt,
-	}
-	factors := []float64{
-		ren.Factor,
-		ren.Factor * 2,
-		ren.Factor / 2,
-		ren.Factor * 4,
-		ren.Factor / 4,
-		ren.Factor * 8,
-		ren.Factor / 8,
-	}
-	exposures := []float64{
-		ren.Exposure,
-		ren.Exposure * 1.5,
-		ren.Exposure / 1.5,
-		ren.Exposure * 2,
-		ren.Exposure / 2,
-	}
-	i := 0
-	for _, f := range functions {
-		for _, factor := range factors {
-			for _, exposure := range exposures {
-
-				ren.Exposure = exposure
-				ren.Factor = factor
-				ren.F = f
-
-				plot.Plot(ren, frac)
-				if err := ren.Render(filePng, fileJpg, fmt.Sprintf("%s-%s-%f-%f", out, filepath.Base(util.FunctionName(f)), factor, exposure)); err != nil {
-					return err
-				}
-				i++
-			}
 		}
 	}
 	return nil

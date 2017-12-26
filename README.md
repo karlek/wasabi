@@ -45,7 +45,7 @@ $ wabisabi
 ![Benchmark](https://github.com/karlek/wabisabi/blob/master/img/benchmark.png?raw=true)
 
 ## Future features
-t
+
 * Metropolis-hastings algorithm for faster zooming.
 * Orbit trapping; would be amazing!
 
@@ -74,7 +74,6 @@ z := complex(math.Sin(real(c)), math.Sin(imag(c)))
 
 
 * Xor thing
-* Orbit gradient
 * Function for iteration
 * Punkterna orbitlängderna blir utfallsrum som vi samplar med permutation.
 
@@ -92,8 +91,6 @@ z := complex(math.Sin(real(c)), math.Sin(imag(c)))
 * Since the orbits reminds me of a circle; it could be possible to unravel the circle and convert them into sine-waves to create tones :D
     - Outer convex hull to get the radius and by extension the amplitude. 
 
-* Test slices instead of fixed size arrays for runtime allocation of iterations and width/height.
-
 * More than 3 histograms?
     - Doesn't this only make sense with color spaces with more than 3 values such as CMYK?
 
@@ -107,7 +104,7 @@ The coefficient on the __real__ axis has two properties:
     - It twists on two points towards the center.
     - Try with values like: _1.01_.
 * When smaller than _1_ it works as a zoom. 
-    - On which axis? Both real and imaginary? Or only real? Not sure.  
+    - On which axis? Both real and imaginary? Or only real? Not sure.
 * When smaller than _0_ (-1.1 to 0) it spirals in on itself.
     - It rotates on one point towards itself.
 

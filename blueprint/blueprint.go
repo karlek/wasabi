@@ -44,7 +44,7 @@ type Blueprint struct {
 	Real      float64 // Offset on the real-value axis.
 	Zoom      float64 // Zoom factor.
 	Seed      int64   // Random seed.
-	Threshold int64   // Minimum orbit length to be registered.
+	Threshold float64 // Minimum orbit length to be registered.
 
 	// Coefficients muliplied to the results in the complex function.
 	ImagCoefficient float64
@@ -134,7 +134,7 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 		b.Tries,
 		registerMode,
 		b.Theta,
-		b.Threshold)
+		int64(b.Threshold))
 }
 
 func parseRegisterMode(mode string) func(complex128, complex128, *fractal.Orbit, *fractal.Fractal) int64 {
@@ -185,9 +185,9 @@ func parsePlane(plane string) func(complex128, complex128) complex128 {
 	case "crci":
 		// Mandelbrot perimiter.
 		return fractal.Crci
-	case "crzi":
+	case "zicr":
 		// Pretty :D
-		return fractal.Crzi
+		return fractal.Zicr
 	case "zici":
 		// Pretty :D
 		return fractal.Zici

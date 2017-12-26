@@ -17,10 +17,13 @@ const (
 	Modulo         Type = iota // Determine the coloring scheme based on the modulo of the iteration.
 	IterationCount             // Determine the coloring scheme based on the length of the orbit.
 	OrbitLength                // Interpolate the color for each point in the orbit.
+	VectorField
 )
 
 func (t Type) String() string {
 	switch t {
+	case VectorField:
+		return "VectorField"
 	case Modulo:
 		return "Modulo"
 	case IterationCount:
@@ -113,6 +116,8 @@ func (c *Coloring) Get(i int64, it int64) (float64, float64, float64) {
 	switch c.mode {
 	case Modulo:
 		return c.modulo(i)
+	case VectorField:
+		return c.vector(i, it)
 	case OrbitLength:
 		return c.orbit(i, it)
 	case IterationCount:
@@ -120,6 +125,10 @@ func (c *Coloring) Get(i int64, it int64) (float64, float64, float64) {
 	default:
 		return c.modulo(i)
 	}
+}
+
+func (c *Coloring) vector(i, it int64) (float64, float64, float64) {
+	return 0, 0, 0
 }
 
 func (c *Coloring) modulo(i int64) (float64, float64, float64) {

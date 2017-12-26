@@ -78,7 +78,7 @@ func plotCol(wg *sync.WaitGroup, x int, col []float64, ren *render.Render, frac 
 			uint8(value(ren.F, frac.B[x][y], bMax, ren.Factor, ren.Exposure)),
 			255}
 		// We flip x <=> y to rotate the image to an upright position.
-		ren.Image.SetRGBA(y, x, c)
+		ren.Image.SetRGBA(x, y, c)
 	}
 	wg.Done()
 }
