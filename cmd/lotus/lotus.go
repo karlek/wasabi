@@ -5,49 +5,64 @@ import (
 	"image"
 	"image/color"
 	"image/jpeg"
+	"math"
 	"os"
 	"sync"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/karlek/profile"
-	"github.com/karlek/wasabi/coloring"
 	"github.com/karlek/wasabi/fractal"
+	"github.com/karlek/wasabi/iro"
 	"github.com/karlek/wasabi/mandel"
+	"github.com/pkg/profile"
 )
 
 const (
-	width  = 1024
-	height = 1024
-	real   = 0.8
-	imag   = 0.0
+	width      = 4096
+	height     = 4096
+	realOffset = 0.0
+	imagOffset = 0.0
 )
 
-func main() {
-	defer profile.Start(profile.CPUProfile).Stop()
+var stops = []iro.Stop{
+	iro.Stop{color.RGBA{0xff, 0xff, 0x1a, 255}, 0.0},
+	iro.Stop{color.RGBA{0x00, 0x00, 0x00, 255}, 0.3},
+	iro.Stop{color.RGBA{0xeb, 0, 0xc2, 255}, 1},
+}
 
-	// The "keypoints" of the gradient.
-	keypoints := coloring.GradientTable{
-		{coloring.MustParseHex("#5e4fa2"), 0.0},
-		{coloring.MustParseHex("#3288bd"), 0.1},
-		{coloring.MustParseHex("#66c2a5"), 0.2},
-		{coloring.MustParseHex("#abdda4"), 0.3},
-		{coloring.MustParseHex("#e6f598"), 0.4},
-		{coloring.MustParseHex("#ffffbf"), 0.5},
-		{coloring.MustParseHex("#fee090"), 0.6},
-		{coloring.MustParseHex("#fdae61"), 0.7},
-		{coloring.MustParseHex("#f46d43"), 0.8},
-		{coloring.MustParseHex("#d53e4f"), 0.9},
-		{coloring.MustParseHex("#9e0142"), 1.0},
+var white = color.RGBA{0xff, 0xff, 0xff, 0xff}
+var black = color.RGBA{0x00, 0x00, 0x00, 0xff}
+
+var gradient iro.GradientTable = iro.New(stops, black)
+
+func smooth(escapesIn, iterations float64, last complex128) float64 {
+	scalar := (float64(escapesIn) + 1.0 - math.Log(math.Log(abs(last)))/math.Log(2)) / float64(iterations)
+	if math.IsNaN(scalar) {
+		return 0
 	}
+	if scalar < 0 {
+		return 0
+	}
+	if scalar > 1 {
+		return 1
+	}
+	return scalar
+}
+
+func abs(z complex128) float64 {
+	return real(z)*real(z) + imag(z)*imag(z)
+}
+
+func main() {
+	defer profile.Start().Stop()
 
 	pixelToCoordinate := func(frac *fractal.Fractal, x, y int) complex128 {
-		r := 2 / frac.Zoom * (2*(float64(x)/width+real) - 1)
-		i := 2 / frac.Zoom * (2*(float64(y)/height+imag) - 1)
+		r := 2 / frac.Zoom * (2*(float64(x)/width+realOffset) - 1)
+		i := 2 / frac.Zoom * (2*(float64(y)/height+imagOffset) - 1)
 		return complex(r, i)
 	}
 
-	z := complex(0, 0i)
-	// c := complex(-0.0, -math.Sqrt(1.00))
+	z := complex(0.0, 0.0)
+	c := complex(0.285, 0.001)
 
 	// maxDist := -1.0
 	var frame int64
@@ -61,35 +76,52 @@ func main() {
 		Width:      width,
 		Height:     height,
 		Iterations: iterations,
-		Zoom:       float64(frame),
-		Bailout:    1e10,
+		Zoom:       0.7,
+		Bailout:    4e0,
+		Func:       func(z, c, _ complex128) complex128 { return z*z + c },
 	}
 
 	for i := 0; i < width; i++ {
 		go func(i int, frac *fractal.Fractal, img *image.RGBA, wg *sync.WaitGroup) {
 			for j := 0; j <= height; j++ {
-				// c := pixelToCoordinate(i, j)
-				z := pixelToCoordinate(frac, i, j)
+				c = pixelToCoordinate(frac, i, j)
+				// z = pixelToCoordinate(frac, i, j)
 
-				escapesIn := mandel.FieldLinesEscapes(z, c, 1e+3, frac)
-				// escapesIn := mandel.Escapes(float64(frame)/float64(max), z, c, frac)
-				// dist := mandel.OrbitTrap(z, c, z, frac)
-				if escapesIn == 0 {
-					continue
-				}
-				// if escapesIn == 0 || escapesIn == iterations {
+				// last, escapesIn := mandel.FieldLinesEscapes(z, c, 1e+3, frac)
+				last, escapesIn := mandel.EscapedClean(z, c, frac)
+				// dist := mandel.OrbitTrap(z, c, complex(0.1, 1), frac)
+				// fmt.Println(escapesIn)
+				// if escapesIn == -1 {
 				// 	continue
 				// }
+				// fmt.Println(escapesIn)
+
+				if escapesIn == 0 || escapesIn == iterations {
+					continue
+				}
+
 				// if dist == 1e9 {
 				// 	continue
 				// }
-				col := keypoints.GetInterpolatedColorFor(float64(escapesIn) / float64(iterations))
-				// fmt.Println(dist)
-				// col := keypoints.GetInterpolatedColorFor(float64(dist) / 2)
-				// fmt.Println(float64(dist) / 4)
+
+				// fmt.Println(float64(escapesIn) / float64(iterations))
+
+				// fmt.Println(dist / 4)
+
+				// scalar := dist / 10
+				scalar := smooth(float64(escapesIn), float64(frac.Iterations), last)
+
+				// fmt.Println(scalar)
+
+				col := gradient.Lookup(scalar)
 				// maxDist = math.Max(dist, maxDist)
-				r, g, b := col.RGB255()
-				rgba := color.RGBA{r, g, b, 255}
+				r, g, b, a := col.RGBA()
+				rgba := color.RGBA{
+					uint8(r >> 8),
+					uint8(g >> 8),
+					uint8(b >> 8),
+					uint8(a >> 8),
+				}
 				img.SetRGBA(i, j, rgba)
 			}
 			wg.Done()
