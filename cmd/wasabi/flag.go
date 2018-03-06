@@ -109,6 +109,9 @@ var (
 
 	// Interactive rendering
 	interactive bool
+
+	// Theta rotation
+	theta float64
 )
 
 func init() {
@@ -134,6 +137,7 @@ func init() {
 	flag.StringVar(&palettePath, "palette", "", "path to image to be used as color palette")
 	flag.StringVar(&trapPath, "trap", "", "orbit trap path to image.")
 	flag.Float64Var(&tries, "tries", 1e0, "number (width*height) of orbits attempts")
+	flag.Float64Var(&theta, "theta", 0, "rotation angle in radian")
 	flag.Float64Var(&realCoefficient, "realco", 1, "real coefficient for the complex function.")
 	flag.Float64Var(&imagCoefficient, "imagco", 0, "imag coefficient for the complex function.")
 	flag.Float64Var(&bailout, "bail", 4, "bailout value")
@@ -165,6 +169,10 @@ func parseModeFlag() {
 		mode = coloring.IterationCount
 	case "modulo":
 		mode = coloring.Modulo
+	case "vector":
+		mode = coloring.VectorField
+	case "orbit":
+		mode = coloring.OrbitLength
 	default:
 		logrus.Fatalln("invalid coloring function:", modeStr)
 	}

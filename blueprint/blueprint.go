@@ -203,8 +203,12 @@ func parseModeFlag(mode string) coloring.Type {
 		return coloring.IterationCount
 	case "modulo":
 		return coloring.Modulo
+	case "vector":
+		return coloring.VectorField
 	case "orbit":
 		return coloring.OrbitLength
+	case "path":
+		return coloring.Path
 	default:
 		logrus.Fatalln("invalid coloring function:", mode)
 	}

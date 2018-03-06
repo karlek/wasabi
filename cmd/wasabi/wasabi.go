@@ -84,6 +84,7 @@ func renderBuddha(blueprintPath string) (err error) {
 	if err != nil {
 		return err
 	}
+	frac.Theta = theta
 
 	if load {
 		if !silent {

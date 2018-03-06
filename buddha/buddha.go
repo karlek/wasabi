@@ -114,12 +114,18 @@ func Attempt(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int64
 		return 0
 	}
 	var length int64
-	if frac.Method.Mode() == coloring.OrbitLength || frac.Method.Mode() == coloring.IterationCount {
-		length = registerField(it, orbit, frac)
-	} else if frac.Method.Mode() == coloring.VectorField {
-		length = registerOrbit(it, orbit, frac)
-	} else {
+
+	switch frac.Method.Mode() {
+	case coloring.OrbitLength:
 		length = registerColoredOrbit(it, orbit, frac)
+	case coloring.IterationCount:
+		length = registerOrbit(it, orbit, frac)
+	case coloring.Modulo:
+		length = registerOrbit(it, orbit, frac)
+	case coloring.VectorField:
+		length = registerField(it, orbit, frac)
+	case coloring.Path:
+		length = registerPaths(it, orbit, frac)
 	}
 	return length
 }

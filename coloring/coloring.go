@@ -18,6 +18,7 @@ const (
 	IterationCount             // Determine the coloring scheme based on the length of the orbit.
 	OrbitLength                // Interpolate the color for each point in the orbit.
 	VectorField
+	Path
 )
 
 func (t Type) String() string {
