@@ -54,9 +54,9 @@ type Blueprint struct {
 
 	Plane string // Chose which major plane we will plot: Crci, Crzi, Zici, Zrci, Zrcr, Zrzi.
 
-	BaseColor iro.Color   // The background color.
-	Gradient  []iro.Color // The color gradient used by the coloring methods.
-	Range     []float64   // The
+	BaseColor iro.RGBA   // The background color.
+	Gradient  []iro.RGBA // The color gradient used by the coloring methods.
+	Range     []float64  // The
 
 	Theta float64
 }
@@ -89,7 +89,7 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 	coefficient := complex(b.RealCoefficient, b.ImagCoefficient)
 
 	// Our way of registering orbits. Either we register the orbits that either converges, diverges or both.
-	registerMode := parseRegisterMode(b.RegisterMode)
+	registerMode := parseRegistrer(b.RegisterMode)
 
 	// Our complex function to find orbits with.
 	function := func(z, c, coef complex128) complex128 {
@@ -101,7 +101,7 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 		grad.AddColor(colorful.Color{R: c.R, G: c.G, B: c.B})
 	}
 
-	method := coloring.NewColoring(b.BaseColor.RGBA(), parseModeFlag(b.Coloring), grad, b.Range)
+	method := coloring.NewColoring(b.BaseColor.StandardLibrary(), parseModeFlag(b.Coloring), grad, b.Range)
 
 	// Fill our histogram bins of the orbits.
 	return fractal.New(
@@ -124,9 +124,10 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 		int64(b.Threshold))
 }
 
-func parseRegisterMode(mode string) mandel.Registrer {
-	// Choose buddhabrot mode.
-	switch strings.ToLower(mode) {
+// parseRegisterMode parses the _registerer_ string to a fractal orbit registrer.
+func parseRegistrer(registrer string) mandel.Registrer {
+	// Choose buddhabrot registrer.
+	switch strings.ToLower(registrer) {
 	case "anti":
 		return mandel.Converged
 	case "primitive":
@@ -134,7 +135,7 @@ func parseRegisterMode(mode string) mandel.Registrer {
 	case "escapes":
 		return mandel.Escaped
 	default:
-		logrus.Printf("Unknown register mode: %s, defaulting to escapes.\n", mode)
+		logrus.Fatalln("Unknown registrer:", registrer)
 	}
 	return mandel.Escaped
 }
@@ -156,8 +157,8 @@ func parseFunctionFlag(f string) func(float64, float64) float64 {
 	return plot.Exp
 }
 
+// parsePlane parses the _plane string to a plane selection.
 func parsePlane(plane string) func(complex128, complex128) complex128 {
-	// Save the point.
 	switch strings.ToLower(plane) {
 	case "zrzi":
 		// Original.

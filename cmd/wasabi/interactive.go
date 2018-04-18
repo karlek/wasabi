@@ -42,7 +42,7 @@ func renderRun() {
 		out = blue.OutputFilename
 	}
 	ren, frac = blue.Render(), blue.Fractal()
-	draw.Draw(ren.Image, ren.Image.Bounds(), &image.Uniform{blue.BaseColor.RGBA()}, image.ZP, draw.Src)
+	draw.Draw(ren.Image, ren.Image.Bounds(), &image.Uniform{blue.BaseColor.StandardLibrary()}, image.ZP, draw.Src)
 
 	ren.OrbitRatio = buddha.FillHistograms(frac, runtime.NumCPU())
 	ren.Exposure = exposure

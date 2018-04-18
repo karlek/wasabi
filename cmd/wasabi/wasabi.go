@@ -18,6 +18,7 @@ import (
 
 	"github.com/karlek/wasabi/blueprint"
 	"github.com/karlek/wasabi/buddha"
+	"github.com/karlek/wasabi/coloring"
 	"github.com/karlek/wasabi/fractal"
 	"github.com/karlek/wasabi/histo"
 	"github.com/karlek/wasabi/plot"
@@ -62,7 +63,7 @@ func initialize(blueprintPath string) (frac *fractal.Fractal, ren *render.Render
 		return nil, nil, nil, err
 	}
 	frac, ren = blue.Fractal(), blue.Render()
-	draw.Draw(ren.Image, ren.Image.Bounds(), &image.Uniform{blue.BaseColor.RGBA()}, image.ZP, draw.Src)
+	draw.Draw(ren.Image, ren.Image.Bounds(), &image.Uniform{blue.BaseColor.StandardLibrary()}, image.ZP, draw.Src)
 	return frac, ren, blue, nil
 
 	// if factor == -1 {
@@ -87,16 +88,18 @@ func renderBuddha(blueprintPath string) (err error) {
 	}
 	frac.Theta = theta
 
-	file, err := os.Open("ref-heart.png")
-	if err != nil {
-		log.Fatalln(err)
+	if frac.Method.Mode() == coloring.Image {
+		file, err := os.Open("ref-heart.png")
+		if err != nil {
+			log.Fatalln(err)
+		}
+		defer file.Close()
+		img, _, err := image.Decode(file)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		frac.SetReference(img)
 	}
-	defer file.Close()
-	img, _, err := image.Decode(file)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	frac.SetReference(img)
 	if load {
 		if !silent {
 			logrus.Println("[-] Loading visits.")

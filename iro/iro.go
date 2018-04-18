@@ -3,35 +3,61 @@ package iro
 
 import (
 	"image/color"
+	"math"
 )
 
+type Color interface {
+	Lerp(Color, float64) Color
+	RGBA() RGBA
+	HSV() HSV
+}
+
 // Color is float color representation for easier interpolation and gradient creation.
-type Color struct {
-	color.Color
+type RGBA struct {
 	R, G, B, A float64
 }
 
-// RGBA converts the color to standard library color.
-func (c Color) RGBA() color.RGBA {
+func (c RGBA) StandardLibrary() color.RGBA {
 	r, g, b, a := uint8(c.R*255), uint8(c.G*255), uint8(c.B*255), uint8(c.A*255)
 	return color.RGBA{r, g, b, a}
 }
 
-type GradientTable struct {
+// RGBA converts the color to standard library color.
+func (c RGBA) RGBA() RGBA {
+	return c
+}
+
+// RGB returns the color values of the color.
+func (c RGBA) RGB() (float64, float64, float64) {
+	return c.R, c.G, c.B
+}
+
+type Gradient struct {
 	stops []Stop
-	base  color.Color
+	base  Color
 }
 
 type Stop struct {
-	C   color.Color
+	C   Color
 	Pos float64
 }
 
-func New(stops []Stop, base color.Color) (g GradientTable) {
+func Stops(colors []Color, ranges []float64) []Stop {
+	stops := make([]Stop, 0, len(colors))
+	for i, c := range colors {
+		stops = append(stops, Stop{C: c.HSV(), Pos: ranges[i]})
+	}
+	if len(colors) != len(ranges) {
+		panic("invalid length of colors and ranges")
+	}
+	return stops
+}
+
+func New(stops []Stop, base Color, normalize bool) (g Gradient) {
 	if len(stops) == 0 {
 		panic("Invalid gradient")
 	}
-	var prev Stop = stops[0]
+	prev := stops[0]
 	for i := 1; i < len(stops); i++ {
 		if prev.Pos >= stops[i].Pos {
 			panic("Invalid gradient order")
@@ -39,10 +65,12 @@ func New(stops []Stop, base color.Color) (g GradientTable) {
 		prev = stops[i]
 	}
 
-	// // Normalize gradient positions.
-	// for i := range stops {
-	// 	stops[i].Pos -= stops[0].Pos
-	// }
+	if normalize {
+		// Normalize gradient positions.
+		for i := range stops {
+			stops[i].Pos -= stops[0].Pos
+		}
+	}
 
 	last := stops[len(stops)-1]
 	if last.Pos == 0 {
@@ -53,47 +81,134 @@ func New(stops []Stop, base color.Color) (g GradientTable) {
 		stops[i].Pos *= (1 / last.Pos)
 	}
 
-	return GradientTable{
+	return Gradient{
 		stops: stops,
 		base:  base,
 	}
 }
 
-func (g GradientTable) Lookup(i float64) color.Color {
-	var lower Stop = g.stops[0]
-	var upper Stop = g.stops[len(g.stops)-1]
+func (g Gradient) Lookup(t float64) Color {
+	lower := g.stops[0]
+	upper := g.stops[len(g.stops)-1]
 
-	if i < lower.Pos || i > upper.Pos {
+	if t < lower.Pos || t > upper.Pos {
 		return g.base
 	}
 	for _, stop := range g.stops {
-		if stop.Pos > i {
+		if stop.Pos > t {
 			upper = stop
 			break
 		}
 		lower = stop
 	}
-	return interpolate(lower, upper, i)
+	return lower.C.Lerp(upper.C, t)
+	// return hsvLerp(lower.C, upper.C, t)
+	// return lerp(lower.C, upper.C, t)
+}
+
+// rgbInterpolation interpolates between the two colors in the RGB color space.
+// TODO(_): Implement alpha channels.
+func (a RGBA) Lerp(blend Color, t float64) Color {
+	b := blend.RGBA()
+	return RGBA{
+		R: a.R + t*(b.R-a.R),
+		G: a.G + t*(b.G-a.G),
+		B: a.B + t*(b.B-a.B),
+		A: 1,
+	}
+}
+
+// HSV
+func (c RGBA) HSV() HSV {
+	var h, s, v float64
+	cMin := math.Min(c.R, math.Min(c.G, c.B))
+	cMax := math.Max(c.R, math.Max(c.G, c.B))
+	delta := cMax - cMin
+
+	v = cMax
+
+	if cMax == 0 {
+		s = 0
+		h = -1
+		return HSV{H: h, S: s, V: v}
+	}
+	s = delta / cMax
+
+	switch cMax {
+	case c.R:
+		h = math.Mod((c.G-c.B)/delta, 6)
+	case c.G:
+		h = ((c.B-c.R)/delta + 2)
+	case c.B:
+		h = ((c.G-c.B)/delta + 4)
+	}
+	h *= 60
+	return HSV{
+		H: h,
+		S: s,
+		V: v,
+	}
+}
+
+type HSV struct {
+	H, S, V float64
+}
+
+func (c HSV) HSV() HSV {
+	return c
 }
 
 // TODO(_): Implement alpha channels.
-func interpolate(s1, s2 Stop, i float64) color.Color {
-	s1.Pos -= i
-	s2.Pos -= i
-	scale := 1 / s2.Pos
-	s2.Pos *= scale
-	i *= scale
-
-	r1, g1, b1, _ := s1.C.RGBA()
-	r2, g2, b2, _ := s2.C.RGBA()
-
-	r1, g1, b1 = r1>>8, g1>>8, b1>>8
-	r2, g2, b2 = r2>>8, g2>>8, b2>>8
-
-	return color.RGBA{
-		R: uint8(float64(r1)*i + float64(r2)*(1-i)),
-		G: uint8(float64(g1)*i + float64(g2)*(1-i)),
-		B: uint8(float64(b1)*i + float64(b2)*(1-i)),
-		A: 255,
+func (col HSV) RGBA() RGBA {
+	h, s, v := col.H, col.S, col.V
+	if h == -1 {
+		return RGBA{0, 0, 0, 1.0}
 	}
+	c := v * s
+	h = h / 60
+	x := c * (1 - math.Abs(math.Mod(h, 2)-1))
+
+	var r, g, b float64
+	switch {
+	case 0 <= h && h < 1.0:
+		r, g, b = c, x, 0
+	case 1 <= h && h < 2:
+		r, g, b = x, c, 0
+	case 2 <= h && h < 3:
+		r, g, b = 0, c, x
+	case 3 <= h && h < 4:
+		r, g, b = 0, x, c
+	case 4 <= h && h < 5:
+		r, g, b = x, 0, c
+	case 5 <= h && h < 6:
+		r, g, b = c, 0, x
+	}
+	m := v - c
+	return RGBA{
+		R: r + m,
+		G: g + m,
+		B: b + m,
+		A: 1,
+	}
+}
+
+// TODO(_): Direction matters
+func (a HSV) Lerp(blend Color, t float64) Color {
+	b := blend.HSV()
+	h1, s1, v1 := a.H, a.S, a.V
+	h2, s2, v2 := b.H, b.S, b.V
+
+	return HSV{
+		H: interpolateAngle(h1, h2, t),
+		S: s1 + t*(s2-s1),
+		V: v1 + t*(v2-v1),
+	}
+}
+
+// Utility used by Hxx color-spaces for interpolating between two angles in [0,360].
+func interpolateAngle(a0, a1, t float64) float64 {
+	// Based on the answer here: http://stackoverflow.com/a/14498790/2366315
+	// With potential proof that it works here: http://math.stackexchange.com/a/2144499
+	delta := math.Mod(math.Mod(a1-a0, 360.0)+540, 360.0) - 180.0
+	return math.Mod(a0+t*delta+360.0, 360.0)
 }
