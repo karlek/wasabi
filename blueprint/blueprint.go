@@ -135,8 +135,8 @@ func parseRegisterMode(mode string) mandel.Registrer {
 		return mandel.Escaped
 	default:
 		logrus.Printf("Unknown register mode: %s, defaulting to escapes.\n", mode)
-		return mandel.Escaped
 	}
+	return mandel.Escaped
 }
 
 // parseFunctionFlag parses the _fun_ string to a color scaling function.
@@ -178,8 +178,9 @@ func parsePlane(plane string) func(complex128, complex128) complex128 {
 		// Pretty :D
 		return fractal.Zici
 	default:
-		return fractal.Zrzi
+		logrus.Fatalln("invalid plane:", plane)
 	}
+	return fractal.Zrzi
 }
 
 // parseModeFlag parses the _mode_ string to a coloring function.
