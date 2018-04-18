@@ -20,6 +20,7 @@ func makeFrame(ren *render.Render, frac *fractal.Fractal) *pixel.PictureData {
 	ren.OrbitRatio = buddha.FillHistograms(frac, runtime.NumCPU())
 	plot.Plot(ren, frac)
 	fmt.Println(frac.Theta)
+	fmt.Println(frac.Theta2)
 	return pixel.PictureDataFromImage(ren.Image)
 }
 

@@ -19,6 +19,7 @@ const (
 	OrbitLength                // Interpolate the color for each point in the orbit.
 	VectorField
 	Path
+	Image
 )
 
 func (t Type) String() string {
@@ -31,6 +32,10 @@ func (t Type) String() string {
 		return "IterationCount"
 	case OrbitLength:
 		return "OrbitLength"
+	case Path:
+		return "Path"
+	case Image:
+		return "Image"
 	default:
 		return "fail"
 	}
@@ -92,18 +97,19 @@ func NewColoring(base color.RGBA, mode Type, grad Gradient, ranges []float64) *C
 			base.A = 255
 		}
 		keypoints = GradientTable{Base: colorful.MakeColor(base)}
-		var rang = []float64{
-			0.0,
-			// 0.000005,
-			// 0.05,
-			// 0.10,
-			// 0.25,
-			0.5,
-			// 0.75,
-			// 0.95,
-			// 0.99,
-			1,
-		}
+		// var rang = []float64{
+		// 	0.0,
+		// 	// 0.000005,
+		// 	// 0.05,
+		// 	// 0.10,
+		// 	// 0.25,
+		// 	0.5,
+		// 	// 0.75,
+		// 	// 0.95,
+		// 	// 0.99,
+		// 	1,
+		// }
+		rang := ranges
 		for i := len(rang) - 1; i >= 0; i-- {
 			j := len(rang) - 1 - i
 			c := colorful.Color(grad[j].(colorful.Color))

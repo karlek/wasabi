@@ -7,6 +7,7 @@ import (
 	"image/draw"
 	_ "image/jpeg"
 	_ "image/png"
+	"log"
 	"os"
 	"os/signal"
 	"runtime"
@@ -86,10 +87,22 @@ func renderBuddha(blueprintPath string) (err error) {
 	}
 	frac.Theta = theta
 
+	file, err := os.Open("ref-heart.png")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer file.Close()
+	img, _, err := image.Decode(file)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	frac.SetReference(img)
 	if load {
 		if !silent {
 			logrus.Println("[-] Loading visits.")
 		}
+		ren.F = f
+		ren.Exposure = exposure
 		frac, err = loadArt()
 		if err != nil {
 			return err

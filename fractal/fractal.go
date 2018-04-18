@@ -3,6 +3,7 @@ package fractal
 import (
 	"bytes"
 	"fmt"
+	"image"
 	"image/color"
 	"math"
 	"text/tabwriter"
@@ -33,6 +34,7 @@ type Fractal struct {
 	Points     int64
 	Threshold  int64
 	Tries      float64
+	reference  image.Image
 }
 
 // New returns a new render for fractals.
@@ -130,4 +132,14 @@ func (f *Fractal) Clear() {
 	f.R = histo.New(f.Width, f.Height)
 	f.G = histo.New(f.Width, f.Height)
 	f.B = histo.New(f.Width, f.Height)
+}
+
+func (f *Fractal) SetReference(i image.Image) {
+	f.reference = i
+}
+
+func (f *Fractal) ReferenceColor(pt image.Point) (red, green, blue float64) {
+	r, g, b, _ := f.reference.At(pt.Y%f.reference.Bounds().Max.X, pt.X%f.reference.Bounds().Max.Y).RGBA()
+	red, green, blue = float64(r>>8)/256, float64(g>>8)/256, float64(b>>8)/256
+	return red, green, blue
 }

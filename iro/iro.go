@@ -49,9 +49,9 @@ func New(stops []Stop, base color.Color) (g GradientTable) {
 
 func (g GradientTable) Lookup(i float64) color.Color {
 	var lower Stop = g.stops[0]
-	var upper Stop
+	var upper Stop = g.stops[len(g.stops)-1]
 
-	if i < lower.Pos || i > g.stops[len(g.stops)-1].Pos {
+	if i < lower.Pos || i > upper.Pos {
 		return g.base
 	}
 	for _, stop := range g.stops {

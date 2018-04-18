@@ -9,7 +9,6 @@ import (
 	"time"
 
 	rand7i "github.com/7i/rand"
-	"github.com/gonum/matrix/mat64"
 	colorful "github.com/lucasb-eyer/go-colorful"
 
 	"github.com/karlek/progress/barcli"
@@ -21,20 +20,40 @@ import (
 // their points in a histogram.
 func FillHistograms(frac *fractal.Fractal, workers int) float64 {
 	bar, _ := barcli.New(int(frac.Tries * float64(frac.Width*frac.Height)))
+	// if !silent {
 	go func(bar *barcli.Bar) {
 		for {
 			if bar.Done() {
 				return
 			}
-			// if !silent {
 			bar.Print()
-			// }
 			time.Sleep(1000 * time.Millisecond)
 		}
 	}(bar)
+	// }
 
 	wg := new(sync.WaitGroup)
 	wg.Add(workers)
+
+	// rotX = mat64.NewDense(4, 4, []float64{
+	// 	math.Cos(frac.Theta2), math.Sin(frac.Theta2), 0, 0,
+	// 	-math.Sin(frac.Theta2), math.Cos(frac.Theta2), 0, 0,
+	// 	0, 0, 1, 0,
+	// 	0, 0, 0, 1,
+	// })
+
+	// rotSomething = mat64.NewDense(4, 4, []float64{
+	// 	1, 0, 0, 0,
+	// 	0, 1, 0, 0,
+	// 	0, 0, math.Cos(frac.Theta), -math.Sin(frac.Theta),
+	// 	0, 0, math.Sin(frac.Theta), math.Cos(frac.Theta),
+	// })
+	// rotSomething = mat64.NewDense(4, 4, []float64{
+	// 	math.Cos(frac.Theta), 0, -math.Sin(frac.Theta), 0,
+	// 	0, 1, 0, 0,
+	// 	math.Sin(frac.Theta), 0, math.Cos(frac.Theta), 0,
+	// 	0, 0, 0, 1,
+	// })
 
 	orbitTries := int64(frac.Tries * float64(frac.Width*frac.Height))
 
@@ -74,27 +93,13 @@ func FillHistograms(frac *fractal.Fractal, workers int) float64 {
 func arbitrary(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG, share int64, wg *sync.WaitGroup, bar *barcli.Bar) {
 	orbit := fractal.NewOrbitTrap(make([]complex128, frac.Iterations), complex(-1.14, 0))
 	var z, c complex128
-
-	rotX = mat64.NewDense(4, 4, []float64{
-		math.Cos(frac.Theta2), math.Sin(frac.Theta2), 0, 0,
-		-math.Sin(frac.Theta2), math.Cos(frac.Theta2), 0, 0,
-		0, 0, 1, 0,
-		0, 0, 0, 1,
-	})
-
-	rotSomething = mat64.NewDense(4, 4, []float64{
-		1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, math.Cos(frac.Theta), -math.Sin(frac.Theta),
-		0, 0, math.Sin(frac.Theta), math.Cos(frac.Theta),
-	})
 	var total, i int64
 	for i = 0; i < share; i++ {
 		// Increase progress bar.
 		bar.Inc()
 
 		// Our random point which, hopefully, will create an orbit!
-		// z = rng.Complex128Go()
+		z = rng.Complex128Go()
 		c = rng.Complex128Go()
 		orbit.C = c
 
@@ -126,6 +131,8 @@ func Attempt(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int64
 		length = registerField(it, orbit, frac)
 	case coloring.Path:
 		length = registerPaths(it, orbit, frac)
+	case coloring.Image:
+		length = registerImage(it, orbit, frac)
 	}
 	return length
 }
@@ -283,7 +290,7 @@ func registerField(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) int64 
 		} else {
 			continue
 		}
-		sum += 1
+		sum++
 	}
 	return sum
 }
@@ -315,8 +322,8 @@ func point(z, c complex128, frac *fractal.Fractal) (image.Point, bool) {
 	return p, true
 }
 
-var rotX *mat64.Dense
-var rotSomething *mat64.Dense
+// var rotX *mat64.Dense
+// var rotSomething *mat64.Dense
 
 // ptoc converts a point from the complex function to a pixel coordinate.
 //
@@ -327,12 +334,12 @@ func ptoc(z, c complex128, frac *fractal.Fractal) (p image.Point) {
 
 	// var rotVec mat64.Vector
 	// x := mat64.NewVector(4, []float64{real(z), imag(z), real(c), imag(c)})
-	// rotVec := x
+	// rotVec = *x
 	// rotVec.MulVec(rotX, x)
 	// rotVec.MulVec(rotSomething, &rotVec)
 
 	// tmp := frac.Plane(complex(rotVec.At(0, 0), rotVec.At(1, 0)),
-	// 	complex(rotVec.At(2, 0), rotVec.At(3, 0)))
+	// complex(rotVec.At(2, 0), rotVec.At(3, 0)))
 	tmp := frac.Plane(z, c)
 	r, i := real(tmp), imag(tmp)
 
@@ -341,6 +348,36 @@ func ptoc(z, c complex128, frac *fractal.Fractal) (p image.Point) {
 	p.Y = int(frac.Zoom*float64(frac.Height/4)*(i+frac.OffsetImag) + float64(frac.Height)/2.0)
 
 	return p
+}
+
+func registerImage(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) int64 {
+	if it == -1 {
+		return -1
+	}
+
+	var sum int64
+	// Get color from gradient based on iteration count of the orbit.
+	for _, p := range orbit.Points[:it] {
+		sum += registerPointReferene(p, orbit, frac)
+	}
+	return sum
+}
+
+func registerPointReferene(z complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int64 {
+	if pt, ok := point(z, orbit.C, frac); ok {
+		red, green, blue := frac.ReferenceColor(pt)
+		if red != 0 {
+			frac.R[pt.X][pt.Y] += red
+		}
+		if green != 0 {
+			frac.G[pt.X][pt.Y] += green
+		}
+		if blue != 0 {
+			frac.B[pt.X][pt.Y] += blue
+		}
+		return 1
+	}
+	return 0
 }
 
 func registerPaths(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) int64 {

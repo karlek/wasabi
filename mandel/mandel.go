@@ -2,7 +2,6 @@ package mandel
 
 import (
 	"math"
-	"math/cmplx"
 
 	"github.com/karlek/wasabi/fractal"
 )
@@ -77,13 +76,14 @@ func FieldLinesEscapes(z, c complex128, g float64, frac *fractal.Fractal) (compl
 	return z, -1
 }
 
-func OrbitTrap(z, c, trap complex128, frac *fractal.Fractal) float64 {
+func OrbitFTrap(z, c complex128, trap func(complex128) float64, frac *fractal.Fractal) (float64, complex128) {
 	dist := 1e9
+	closest := z
 
 	// We ignore all values that we know are in the bulb, and will therefore
 	// converge.
 	if isInBulb(c) {
-		return 1e9
+		// return 1e9
 	}
 
 	// Saved value for cycle-detection.
@@ -93,19 +93,62 @@ func OrbitTrap(z, c, trap complex128, frac *fractal.Fractal) float64 {
 	var i int64
 	for i = 0; i < frac.Iterations; i++ {
 		z = frac.Func(z, c, frac.Coef)
-		dist = math.Min(dist, cmplx.Abs(z-trap))
+		// dist = math.Min(dist, trap(z))
+		if newDist := trap(z); dist > newDist {
+			dist = newDist
+			closest = z
+		}
 		if IsCycle(z, &bfract, i) {
-			return 1e9
+			return math.Sqrt(dist), closest
 		}
 
 		// This point diverges, so we all the preceeding points are interesting
 		// and will be registered.
 		if Escapes(z, frac.Bailout) {
-			return dist
+			// return math.Sqrt(dist), closest
+			return 1e9, closest
 		}
 	}
 	// This point converges; assumed under the number of iterations.
-	return 1e9
+	return math.Sqrt(dist), closest
+}
+
+func sign(f float64) float64 {
+	if f < 0 {
+		return -1
+	}
+	return 1
+}
+
+func Pickover(z complex128) float64 {
+	// Distance to y-axis.
+	dist := DistToLine(z, complex(0, 0), complex(1, 0))
+	// Distance to x-axis.
+	dist += DistToLine(z, complex(0, 0), complex(0, 1))
+
+	return dist
+}
+func Line(z complex128) float64 {
+	p0 := complex(0.0, 0.0)
+	dir := complex(0, 1)
+
+	return DistToLine(z, p0, dir)
+}
+
+func DistToLine(z, p0, dir complex128) float64 {
+	// Dot product.
+	projLen := real(z)*real(dir) + imag(z)*imag(dir)
+	// Parameter on line.
+	t := sign(real(dir)) * sign(imag(dir)) * projLen / (math.Abs(real(dir)) + math.Abs(imag(dir)))
+	// Point on line closest to our point z.
+	p := p0 + complex(real(dir)*t, imag(dir)*t)
+	// Vector between the closest point on the line and the point.
+	n := z - p
+	return abs(n)
+}
+
+func OrbitPointTrap(z, c, trap complex128, frac *fractal.Fractal) (float64, complex128) {
+	return OrbitFTrap(z, c, func(z complex128) float64 { return abs(z - trap) }, frac)
 }
 
 func Escapes(z complex128, bail float64) bool {
@@ -197,9 +240,9 @@ func Escaped(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int64
 func EscapedClean(z, c complex128, frac *fractal.Fractal) (complex128, int64) {
 	// We ignore all values that we know are in the bulb, and will therefore
 	// converge.
-	if isInBulb(c) {
-		return z, -1
-	}
+	// if isInBulb(c) {
+	// 	return z, -1
+	// }
 
 	// Saved value for cycle-detection.
 	var bfract complex128
