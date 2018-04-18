@@ -4,14 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"image"
-	"image/color"
 	"math"
 	"text/tabwriter"
 
 	"github.com/karlek/wasabi/coloring"
 	"github.com/karlek/wasabi/histo"
+	"github.com/karlek/wasabi/iro"
 	"github.com/karlek/wasabi/util"
-	"github.com/lucasb-eyer/go-colorful"
 )
 
 type Fractal struct {
@@ -77,12 +76,13 @@ func New(width, height int,
 }
 
 func NewStd(register func(complex128, complex128, *Orbit, *Fractal) int64) *Fractal {
-	var grad coloring.Gradient
-	grad.AddColor(colorful.Color{1, 0, 0})
-	grad.AddColor(colorful.Color{0, 1, 0})
-	grad.AddColor(colorful.Color{0, 0, 1})
+	colors := []iro.Color{
+		iro.RGBA{R: 1, G: 0, B: 0, A: 1},
+		iro.RGBA{R: 0, G: 1, B: 0, A: 1},
+		iro.RGBA{R: 0, G: 0, B: 1, A: 1},
+	}
 
-	method := coloring.NewColoring(color.RGBA{0, 0, 0, 0}, coloring.IterationCount, grad, []float64{100 / 1e6, 0.2, 0.5})
+	method := coloring.NewColoring(iro.RGBA{0, 0, 0, 0}, coloring.IterationCount, colors, []float64{100 / 1e6, 0.2, 0.5})
 
 	return New(
 		4096, 4096,

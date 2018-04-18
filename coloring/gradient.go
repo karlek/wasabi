@@ -1,37 +1,30 @@
 package coloring
 
 import (
-	"image/color"
 	"math/rand"
 	"time"
 
+	"github.com/karlek/wasabi/iro"
 	colorful "github.com/lucasb-eyer/go-colorful"
 )
-
-// Gradient is a list of colors.
-type Gradient []color.Color
-
-func (g *Gradient) Gett(i int64) color.RGBA {
-	return (*g)[i].(color.RGBA)
-}
 
 var (
 	// PedagogicalGradient have a fixed transformation between colors for easier
 	// visualization of divergence.s
-	PedagogicalGradient = Gradient{
-		color.RGBA{0, 0, 0, 0xff},       // Black.
-		color.RGBA{0xff, 0xf0, 0, 0xff}, // Yellow.
-		color.RGBA{0, 0, 0xff, 0xff},    // Blue.
-		color.RGBA{0, 0xff, 0, 0xff},    // Green.
-		color.RGBA{0xff, 0, 0, 0xff},    // Red.
+	PedagogicalGradient = []iro.Color{
+		iro.RGBA{R: 0, G: 0, B: 0, A: 1.0},        // Black.
+		iro.RGBA{R: 1.0, G: 0.9375, B: 0, A: 1.0}, // Yellow.
+		iro.RGBA{R: 0, G: 0, B: 1.0, A: 1.0},      // Blue.
+		iro.RGBA{R: 0, G: 1.0, B: 0, A: 1.0},      // Green.
+		iro.RGBA{R: 1.0, G: 0, B: 0, A: 1.0},      // Red.
 	}
 )
 
 // NewRandomGradient creates a gradient of colors proportional to the number of
 // iterations.
-func NewRandomGradient(iterations float64) Gradient {
+func NewRandomGradient(iterations float64) []iro.Color {
 	seed := rand.New(rand.NewSource(int64(time.Now().Nanosecond())))
-	grad := make(Gradient, int64(iterations))
+	grad := make([]iro.Color, int64(iterations))
 	for n := range grad {
 		grad[n] = randomColor(seed)
 	}
@@ -39,26 +32,35 @@ func NewRandomGradient(iterations float64) Gradient {
 }
 
 // randomColor returns a random RGB color from a random seed.
-func randomColor(seed *rand.Rand) color.RGBA {
-	return color.RGBA{
-		uint8(seed.Intn(255)),
-		uint8(seed.Intn(255)),
-		uint8(seed.Intn(255)),
-		0xff} // No alpha.
+func randomColor(seed *rand.Rand) iro.Color {
+	return iro.RGBA{
+		R: seed.Float64(),
+		G: seed.Float64(),
+		B: seed.Float64(),
+		A: 1.0, // No alpha.
+	}
 }
 
 // NewPrettyGradient creates a gradient of colors fading between purple and
 // white. The smoothness is proportional to the number of iterations
-func NewPrettyGradient(iterations float64) Gradient {
-	grad := make(Gradient, int64(iterations))
-	var col color.Color
+func NewPrettyGradient(iterations float64) []iro.Color {
+	grad := make([]iro.Color, int64(iterations))
+	var col iro.Color
 	for n := range grad {
 		// val ranges from [0..255]
-		val := uint8(float64(n) / float64(iterations) * 255)
+		val := float64(n) / float64(iterations)
 		if int64(n) < int64(iterations/2) {
-			col = color.RGBA{val * 2, 0x00, val * 2, 0xff} // Shade of purple.
+			col = iro.RGBA{
+				R: val * 2,
+				G: 0,
+				B: val * 2,
+				A: 1.0} // Shade of purple.
 		} else {
-			col = color.RGBA{val, val, val, 0xff} // Shade of white.
+			col = iro.RGBA{
+				R: val,
+				G: val,
+				B: val,
+				A: 1.0} // Shade of white.
 		}
 		grad[n] = col
 	}
@@ -67,14 +69,14 @@ func NewPrettyGradient(iterations float64) Gradient {
 
 // DivergenceToColor returns a color depending on the number of iterations it
 // took for the fractal to escape the fractal set.
-func (g Gradient) DivergenceToColor(escapedIn int) color.Color {
-	return g[escapedIn%len(g)]
-}
+// func (g Gradient) DivergenceToColor(escapedIn int) color.Color {
+// 	return g[escapedIn%len(g)]
+// }
 
 // AddColor adds color to gradient.
-func (g *Gradient) AddColor(c color.Color) {
-	(*g) = append((*g), c)
-}
+// func (g *Gradient) AddColor(c color.Color) {
+// 	(*g) = append((*g), c)
+// }
 
 // This table contains the "keypoints" of the colorgradient you want to generate.
 // The position of each keypoint has to live in the range [0,1]

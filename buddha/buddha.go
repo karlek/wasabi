@@ -9,7 +9,6 @@ import (
 	"time"
 
 	rand7i "github.com/7i/rand"
-	colorful "github.com/lucasb-eyer/go-colorful"
 
 	"github.com/karlek/progress/barcli"
 	"github.com/karlek/wasabi/coloring"
@@ -99,7 +98,7 @@ func arbitrary(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG
 		bar.Inc()
 
 		// Our random point which, hopefully, will create an orbit!
-		z = rng.Complex128Go()
+		// z = rng.Complex128Go()
 		c = rng.Complex128Go()
 		orbit.C = c
 
@@ -247,50 +246,22 @@ func registerField(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) int64 
 		return 0
 	}
 
-	keypoints := coloring.GradientTable{}
-	var rang = []float64{
-		0.0,
-		// 0.000005,
-		// 0.05,
-		// 0.10,
-		// 0.25,
-		0.5,
-		// 0.75,
-		// 0.95,
-		// 0.99,
-		1,
-	}
-	for i := len(rang) - 1; i >= 0; i-- {
-		j := len(rang) - 1 - i
-		c := colorful.Color(frac.Method.Grad[j].(colorful.Color))
-		keypoints.Items = append(keypoints.Items, coloring.Item{c, rang[j]})
-	}
-
 	var sum, i int64
+	// Index of previous point.
 	for i = 0; i < it-1; i++ {
+		// Index of posterior point.
 		j := i + 1
+
 		u, v := orbit.Points[i], orbit.Points[j]
 		ru, rv, iu, iv := real(u), real(v), imag(u), imag(v)
+
+		// From the dot product we can calculate the cosAlpha between the two points.
 		cosAlpha := (ru*rv + iu*iv) / (math.Sqrt(ru*ru+iu*iu) * math.Sqrt(rv*rv+iv*iv))
-		alpha := math.Acos(cosAlpha)
-		// fmt.Printf("%.2f\n", alpha/(2*math.Pi))
-		r, g, b, _ := keypoints.GetInterpolatedColorFor(alpha).RGBA()
-		// fmt.Println(i, it, r, g, b)
-		red, green, blue := float64(r>>8)/256, float64(g>>8)/256, float64(b>>8)/256
-		if z, ok := point(u, orbit.C, frac); ok {
-			if red != 0 {
-				frac.R[z.X][z.Y] += red
-			}
-			if green != 0 {
-				frac.G[z.X][z.Y] += green
-			}
-			if blue != 0 {
-				frac.B[z.X][z.Y] += blue
-			}
-		} else {
-			continue
-		}
-		sum++
+		// Which we then normalize to [0, 1].
+		angle := (1 + cosAlpha) / 2
+
+		red, green, blue := frac.Method.Grad.Lookup(angle).RGB()
+		sum += registerPoint(u, orbit, frac, red, green, blue)
 	}
 	return sum
 }

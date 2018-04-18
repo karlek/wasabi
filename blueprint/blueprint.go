@@ -14,7 +14,6 @@ import (
 	"github.com/karlek/wasabi/render"
 
 	"github.com/Sirupsen/logrus"
-	colorful "github.com/lucasb-eyer/go-colorful"
 )
 
 // Blueprint contains the settings and options needed to render a fractal.
@@ -96,12 +95,8 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 		return coef*complex(real(z), imag(z))*complex(real(z), imag(z)) + coef*complex(real(c), imag(c))
 	}
 
-	var grad coloring.Gradient
-	for _, c := range b.Gradient {
-		grad.AddColor(colorful.Color{R: c.R, G: c.G, B: c.B})
-	}
-
-	method := coloring.NewColoring(b.BaseColor.StandardLibrary(), parseModeFlag(b.Coloring), grad, b.Range)
+	colors := iro.ToColors(b.Gradient)
+	method := coloring.NewColoring(b.BaseColor, parseModeFlag(b.Coloring), colors, b.Range)
 
 	// Fill our histogram bins of the orbits.
 	return fractal.New(

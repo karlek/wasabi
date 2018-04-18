@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/karlek/wasabi/fractal"
+	"github.com/karlek/wasabi/iro"
 	colorful "github.com/lucasb-eyer/go-colorful"
 )
 
@@ -18,6 +19,7 @@ func saveArt(frac *fractal.Fractal) (err error) {
 	enc := gob.NewEncoder(file)
 	gob.Register(colorful.Color{})
 	gob.Register(&image.YCbCr{})
+	gob.Register(iro.RGBA{})
 	err = enc.Encode(frac)
 	if err != nil {
 		return err
@@ -33,6 +35,7 @@ func loadArt() (frac *fractal.Fractal, err error) {
 	defer file.Close()
 	gob.Register(colorful.Color{})
 	gob.Register(image.YCbCr{})
+	gob.Register(iro.RGBA{})
 	dec := gob.NewDecoder(file)
 	if err := dec.Decode(&frac); err != nil {
 		return nil, err

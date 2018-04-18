@@ -9,6 +9,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/karlek/wasabi/coloring"
 	"github.com/karlek/wasabi/fractal"
+	"github.com/karlek/wasabi/iro"
 	"github.com/karlek/wasabi/mandel"
 	"github.com/karlek/wasabi/plot"
 )
@@ -72,7 +73,7 @@ var (
 	zoom float64
 
 	// Our gradient to use when plotting the image.
-	grad coloring.Gradient
+	grad iro.Gradient
 
 	// Save as jpg?
 	fileJpg bool

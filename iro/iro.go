@@ -10,6 +10,15 @@ type Color interface {
 	Lerp(Color, float64) Color
 	RGBA() RGBA
 	HSV() HSV
+	RGB() (float64, float64, float64)
+}
+
+func ToColors(rgbas []RGBA) []Color {
+	colors := make([]Color, 0, len(rgbas))
+	for _, rgb := range rgbas {
+		colors = append(colors, rgb)
+	}
+	return colors
 }
 
 // Color is float color representation for easier interpolation and gradient creation.
@@ -33,8 +42,13 @@ func (c RGBA) RGB() (float64, float64, float64) {
 }
 
 type Gradient struct {
-	stops []Stop
-	base  Color
+	Colors []Color
+	Stops  []float64
+	Base   Color
+}
+
+func (g Gradient) Len() int {
+	return len(g.Stops)
 }
 
 type Stop struct {
@@ -45,6 +59,7 @@ type Stop struct {
 func Stops(colors []Color, ranges []float64) []Stop {
 	stops := make([]Stop, 0, len(colors))
 	for i, c := range colors {
+		// stops = append(stops, Stop{C: c, Pos: ranges[i]})
 		stops = append(stops, Stop{C: c.HSV(), Pos: ranges[i]})
 	}
 	if len(colors) != len(ranges) {
@@ -53,13 +68,13 @@ func Stops(colors []Color, ranges []float64) []Stop {
 	return stops
 }
 
-func New(stops []Stop, base Color, normalize bool) (g Gradient) {
-	if len(stops) == 0 {
+func New(colors []Color, stops []float64, base Color, normalize bool) (g Gradient) {
+	if len(stops) != len(colors) {
 		panic("Invalid gradient")
 	}
 	prev := stops[0]
 	for i := 1; i < len(stops); i++ {
-		if prev.Pos >= stops[i].Pos {
+		if prev >= stops[i] {
 			panic("Invalid gradient order")
 		}
 		prev = stops[i]
@@ -68,42 +83,51 @@ func New(stops []Stop, base Color, normalize bool) (g Gradient) {
 	if normalize {
 		// Normalize gradient positions.
 		for i := range stops {
-			stops[i].Pos -= stops[0].Pos
+			stops[i] -= stops[0]
 		}
 	}
 
 	last := stops[len(stops)-1]
-	if last.Pos == 0 {
+	if last == 0 {
 		panic("Invalid gradient values")
 	}
 
 	for i := range stops {
-		stops[i].Pos *= (1 / last.Pos)
+		stops[i] *= (1 / last)
 	}
 
 	return Gradient{
-		stops: stops,
-		base:  base,
+		Colors: colors,
+		Stops:  stops,
+		Base:   base,
 	}
 }
 
 func (g Gradient) Lookup(t float64) Color {
-	lower := g.stops[0]
-	upper := g.stops[len(g.stops)-1]
+	lower := g.Stops[0]
+	upper := g.Stops[len(g.Stops)-1]
 
-	if t < lower.Pos || t > upper.Pos {
-		return g.base
+	if t < lower || t > upper {
+		return g.Base
 	}
-	for _, stop := range g.stops {
-		if stop.Pos > t {
+	var lowerIndex int = 0
+	var upperIndex int = len(g.Stops) - 1
+	for i, stop := range g.Stops {
+		if stop > t {
 			upper = stop
+			upperIndex = i
 			break
 		}
 		lower = stop
+		lowerIndex = i
 	}
-	return lower.C.Lerp(upper.C, t)
+	return g.Colors[lowerIndex].Lerp(g.Colors[upperIndex], t)
 	// return hsvLerp(lower.C, upper.C, t)
 	// return lerp(lower.C, upper.C, t)
+}
+
+func (g *Gradient) AddColor(c Color) {
+	(*g).Colors = append(g.Colors, c)
 }
 
 // rgbInterpolation interpolates between the two colors in the RGB color space.
@@ -190,6 +214,10 @@ func (col HSV) RGBA() RGBA {
 		B: b + m,
 		A: 1,
 	}
+}
+
+func (c HSV) RGB() (float64, float64, float64) {
+	return c.RGBA().RGB()
 }
 
 // TODO(_): Direction matters
