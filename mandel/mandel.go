@@ -237,6 +237,10 @@ func Escaped(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int64
 	return -1
 }
 
+// Registrer is a function which registers if the points (z, c) creates an orbit
+// for a specific fractal.
+type Registrer func(complex128, complex128, *fractal.Orbit, *fractal.Fractal) int64
+
 func EscapedClean(z, c complex128, frac *fractal.Fractal) (complex128, int64) {
 	// We ignore all values that we know are in the bulb, and will therefore
 	// converge.

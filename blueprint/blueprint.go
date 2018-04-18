@@ -129,7 +129,7 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 		int64(b.Threshold))
 }
 
-func parseRegisterMode(mode string) func(complex128, complex128, *fractal.Orbit, *fractal.Fractal) int64 {
+func parseRegisterMode(mode string) mandel.Registrer {
 	// Choose buddhabrot mode.
 	switch strings.ToLower(mode) {
 	case "anti":
