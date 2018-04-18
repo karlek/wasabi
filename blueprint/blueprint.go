@@ -3,7 +3,6 @@ package blueprint
 
 import (
 	"encoding/json"
-	"image/color"
 	"io/ioutil"
 	"strings"
 
@@ -66,15 +65,11 @@ type Blueprint struct {
 func Parse(filename string) (blue *Blueprint, err error) {
 	buf, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return nil, err
+		return blue, err
 	}
+	blue = new(Blueprint)
 	err = json.Unmarshal(buf, blue)
 	return blue, err
-}
-
-func (b *Blueprint) Base() color.RGBA {
-	red, green, blue, alpha := uint8(b.BaseColor.R*255), uint8(b.BaseColor.G*255), uint8(b.BaseColor.B*255), uint8(b.BaseColor.A*255)
-	return color.RGBA{red, green, blue, alpha}
 }
 
 // Render creates a render object for the blueprint.
@@ -106,7 +101,7 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 		grad.AddColor(colorful.Color{R: c.R, G: c.G, B: c.B})
 	}
 
-	method := coloring.NewColoring(b.Base(), parseModeFlag(b.Coloring), grad, b.Range)
+	method := coloring.NewColoring(b.BaseColor.RGBA(), parseModeFlag(b.Coloring), grad, b.Range)
 
 	// Fill our histogram bins of the orbits.
 	return fractal.New(
