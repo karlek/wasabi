@@ -9,6 +9,7 @@ import (
 
 	"github.com/karlek/wasabi/coloring"
 	"github.com/karlek/wasabi/fractal"
+	"github.com/karlek/wasabi/iro"
 	"github.com/karlek/wasabi/mandel"
 	"github.com/karlek/wasabi/plot"
 	"github.com/karlek/wasabi/render"
@@ -17,53 +18,46 @@ import (
 	colorful "github.com/lucasb-eyer/go-colorful"
 )
 
+// Blueprint contains the settings and options needed to render a fractal.
 type Blueprint struct {
-	// Mandelbrot related options.
 	Iterations float64 // Number of iterations.
-	Bailout    float64 // Radius of bailout area.
-	Tries      float64 // Tries * (Width * Height) number of points are sampled to find orbits.
+	Bailout    float64 // Radius of bailout area. Most commonly set to 4, but it's important for planes other than Zrzi.
+	Tries      float64 // The number of orbit attempts calculated by: tries * (width * height)
 
-	// Plot options.
-	Coloring string // Valid values are: "Orbit", "Iteration", "Modulo", "Trap".
+	Coloring string // Coloring method for the orbits.
 
-	DrawPath   bool // Draw the path between points in the orbit.
-	PathPoints int64
+	DrawPath   bool  // Draw the path between points in the orbit.
+	PathPoints int64 // The number of intermediate points to use for interpolation.
 
-	// Output options.
-	Width, Height  int
-	Png, Jpg       bool
-	OutputFilename string
+	Width, Height  int    // Width and height of final image.
+	Png, Jpg       bool   // Image output format.
+	OutputFilename string // Output filename without (file extension).
 
-	// Misc
 	CacheHistograms   bool // Cache the histograms by saving them to a file.
 	MultipleExposures bool // Render the image with multiple exposures.
 	// DrawSamplingMap bool
 
-	// Rendering
 	Imag      float64 // Offset on the imaginary-value axis.
 	Real      float64 // Offset on the real-value axis.
 	Zoom      float64 // Zoom factor.
 	Seed      int64   // Random seed.
 	Threshold float64 // Minimum orbit length to be registered.
 
-	// Coefficients muliplied to the results in the complex function.
+	// Coefficients multiplied to the imaginary and real parts in complex function.
 	ImagCoefficient float64
 	RealCoefficient float64
 
-	// Plot
-	Exposure float64
-	Factor   float64
-	Function string
+	Function string  // Normalization function for scaling the brightness of the pixels.
+	Factor   float64 // Factor is used by the functions in various ways.
+	Exposure float64 // Exposure is a scaling factor applied after the normalization function has been applied.
 
-	// Render methods
 	RegisterMode string // Anti, Primitive, Escapes.
 
-	// Planes
-	Plane string // Crci, Crzi, Zici, Zrci, Zrcr, Zrzi
+	Plane string // Chose which major plane we will plot: Crci, Crzi, Zici, Zrci, Zrcr, Zrzi.
 
-	BaseColor Color
-	Gradient  []Color
-	Range     []float64
+	BaseColor iro.Color   // The background color.
+	Gradient  []iro.Color // The color gradient used by the coloring methods.
+	Range     []float64   // The
 
 	Theta float64
 }
