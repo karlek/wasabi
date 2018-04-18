@@ -62,10 +62,6 @@ type Blueprint struct {
 	Theta float64
 }
 
-type Color struct {
-	R, G, B, A float64
-}
-
 func Parse(filename string) (*Blueprint, error) {
 	buf, err := ioutil.ReadFile(filename)
 	var blue Blueprint

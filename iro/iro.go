@@ -5,6 +5,10 @@ import (
 	"image/color"
 )
 
+type Color struct {
+	R, G, B, A float64
+}
+
 type GradientTable struct {
 	stops []Stop
 	base  color.Color
