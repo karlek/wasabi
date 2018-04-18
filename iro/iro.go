@@ -5,8 +5,16 @@ import (
 	"image/color"
 )
 
+// Color is float color representation for easier interpolation and gradient creation.
 type Color struct {
+	color.Color
 	R, G, B, A float64
+}
+
+// RGBA converts the color to standard library color.
+func (c Color) RGBA() color.RGBA {
+	r, g, b, a := uint8(c.R*255), uint8(c.G*255), uint8(c.B*255), uint8(c.A*255)
+	return color.RGBA{r, g, b, a}
 }
 
 type GradientTable struct {
