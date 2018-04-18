@@ -62,14 +62,14 @@ type Blueprint struct {
 	Theta float64
 }
 
-func Parse(filename string) (*Blueprint, error) {
+// Parse opens and parses a blueprint json file.
+func Parse(filename string) (blue *Blueprint, err error) {
 	buf, err := ioutil.ReadFile(filename)
-	var blue Blueprint
 	if err != nil {
 		return nil, err
 	}
-	err = json.Unmarshal(buf, &blue)
-	return &blue, err
+	err = json.Unmarshal(buf, blue)
+	return blue, err
 }
 
 func (b *Blueprint) Base() color.RGBA {
@@ -77,6 +77,7 @@ func (b *Blueprint) Base() color.RGBA {
 	return color.RGBA{red, green, blue, alpha}
 }
 
+// Render creates a render object for the blueprint.
 func (b *Blueprint) Render() *render.Render {
 	return render.New(
 		b.Width,
@@ -87,6 +88,7 @@ func (b *Blueprint) Render() *render.Render {
 	)
 }
 
+// Fractal creates a fractal object for the blueprint.
 func (b *Blueprint) Fractal() *fractal.Fractal {
 	// Coefficient multiplied inside the complex function we are investigating.
 	coefficient := complex(b.RealCoefficient, b.ImagCoefficient)
@@ -101,7 +103,7 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 
 	var grad coloring.Gradient
 	for _, c := range b.Gradient {
-		grad.AddColor(colorful.Color{c.R, c.G, c.B})
+		grad.AddColor(colorful.Color{R: c.R, G: c.G, B: c.B})
 	}
 
 	method := coloring.NewColoring(b.Base(), parseModeFlag(b.Coloring), grad, b.Range)
@@ -140,7 +142,6 @@ func parseRegisterMode(mode string) func(complex128, complex128, *fractal.Orbit,
 		logrus.Printf("Unknown register mode: %s, defaulting to escapes.\n", mode)
 		return mandel.Escaped
 	}
-	return mandel.Escaped
 }
 
 // parseFunctionFlag parses the _fun_ string to a color scaling function.
