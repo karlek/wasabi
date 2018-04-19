@@ -19,7 +19,7 @@ import (
 // Blueprint contains the settings and options needed to render a fractal.
 type Blueprint struct {
 	Iterations float64 // Number of iterations.
-	Bailout    float64 // Radius of bailout area. Most commonly set to 4, but it's important for planes other than Zrzi.
+	Bailout    float64 // Squared radius of the function domain. Most commonly set to 4, but it's important for planes other than Zrzi.
 	Tries      float64 // The number of orbit attempts calculated by: tries * (width * height)
 
 	Coloring string // Coloring method for the orbits.
@@ -41,7 +41,7 @@ type Blueprint struct {
 	Seed      int64   // Random seed.
 	Threshold float64 // Minimum orbit length to be registered.
 
-	// Coefficients multiplied to the imaginary and real parts in complex function.
+	// Coefficients multiplied to the imaginary and real parts in the complex function.
 	ImagCoefficient float64
 	RealCoefficient float64
 
@@ -49,15 +49,15 @@ type Blueprint struct {
 	Factor   float64 // Factor is used by the functions in various ways.
 	Exposure float64 // Exposure is a scaling factor applied after the normalization function has been applied.
 
-	RegisterMode string // Anti, Primitive, Escapes.
+	RegisterMode string // How the fractal will capture orbits. The different modes are: anti, primitive and escapes.
 
 	Plane string // Chose which major plane we will plot: Crci, Crzi, Zici, Zrci, Zrcr, Zrzi.
 
 	BaseColor iro.RGBA   // The background color.
 	Gradient  []iro.RGBA // The color gradient used by the coloring methods.
-	Range     []float64  // The
+	Range     []float64  // The interpolation points for the gradient.
 
-	Theta float64
+	Theta float64 // Rotation angle. Experimental option since it demands matrix rotation which slows down the renders considerably on CPU based renders.
 }
 
 // Parse opens and parses a blueprint json file.
