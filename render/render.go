@@ -67,6 +67,8 @@ func (ren *Render) Render(filePng, fileJpg bool, filename string) (err error) {
 	return enc(ren.Image, filename)
 }
 
+// Clear clears the image in the renderer to allow for new frames in interactive
+// rendering.
 func (ren *Render) Clear() {
 	width, height := ren.Image.Bounds().Size().X, ren.Image.Bounds().Size().Y
 	ren.Image = image.NewRGBA(image.Rect(0, 0, width, height))
