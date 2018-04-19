@@ -1,4 +1,4 @@
-// Packge histo implements a histogram with persistent save and load features.
+// Package histo implements a histogram with persistent save and load features.
 package histo
 
 import (
@@ -6,10 +6,10 @@ import (
 	"os"
 )
 
-// Histo is a histogram of buddhabrot divergent orbits.
+// Histo is a histogram of buddhabrot orbits.
 type Histo [][]float64
 
-// New creates a histogram for an image of width x height.
+// New creates a histogram for an image of width * height.
 func New(width, height int) Histo {
 	var h = make(Histo, width)
 	for i := range h {
