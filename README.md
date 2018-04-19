@@ -69,6 +69,16 @@ complex(imag(c)-real(c), real(c)*imag(c))
 z := randomPoint(random)
 z := complex(math.Sin(real(c)), math.Sin(imag(c)))
 ```
+// return complex(real(c), -imag(c))
+// return complex(math.Abs(real(c)), math.Abs(imag(c)))
+// return complex(real(c)/imag(c), real(c))
+// return complex(real(c)*imag(c), -imag(c))
+// return complex(-imag(c), -real(c))
+// return complex(imag(c), real(c))
+// return complex(imag(c), real(c))
+// return complex(imag(c), imag(c))
+// return complex(real(c), real(c))
+// return complex(math.Abs(real(c)), math.Abs(imag(c)))
 
 ### Future
 
