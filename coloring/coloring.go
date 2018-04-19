@@ -67,7 +67,7 @@ type keypoint struct {
 
 // function pointer which makes get unneccessary
 func NewColoring(base iro.Color, mode Type, colors []iro.Color, stops []float64) *Coloring {
-	grad := iro.New(colors, stops, base, false)
+	grad := iro.NewGradient(colors, stops, base, 2000)
 	return &Coloring{Grad: grad, mode: mode}
 }
 

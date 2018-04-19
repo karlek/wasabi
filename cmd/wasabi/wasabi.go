@@ -63,7 +63,7 @@ func initialize(blueprintPath string) (frac *fractal.Fractal, ren *render.Render
 		return nil, nil, nil, err
 	}
 	frac, ren = blue.Fractal(), blue.Render()
-	draw.Draw(ren.Image, ren.Image.Bounds(), &image.Uniform{blue.BaseColor.RGBA().StandardLibrary()}, image.ZP, draw.Src)
+	draw.Draw(ren.Image, ren.Image.Bounds(), &image.Uniform{blue.BaseColor.StandardRGBA()}, image.ZP, draw.Src)
 	return frac, ren, blue, nil
 
 	// if factor == -1 {
