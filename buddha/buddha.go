@@ -219,7 +219,7 @@ func registerColoredOrbit(it int64, orbit *fractal.Orbit, frac *fractal.Fractal)
 	var sum int64
 	// Get color from gradient based on iteration count of the orbit.
 	for i, p := range orbit.Points[:it] {
-		red, green, blue := frac.Method.Get(int64(i), frac.Iterations)
+		red, green, blue := frac.Method.Get(int64(i), it)
 		sum += registerPoint(p, orbit, frac, red, green, blue)
 	}
 	return sum
