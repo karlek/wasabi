@@ -1,7 +1,8 @@
+// Package plot converts histograms into an image. It uses normalization
+// techniques to accentuate infrequent orbit paths.
 package plot
 
 import (
-	"image"
 	"image/color"
 	"math"
 	"sync"
@@ -14,11 +15,6 @@ import (
 var (
 	importance histo.Histo // Importance map of the sampling.
 )
-
-// TODO(_): Implement orbit trapping capabilities.
-func Trap(img *image.RGBA, trapPath string, r, g, b histo.Histo) {
-
-}
 
 // TODO(_): Rewrite importance mapping.
 func Importance(width, height int, filePng, fileJpg bool) (err error) {
@@ -68,9 +64,6 @@ func plotCol(wg *sync.WaitGroup, x int, col []float64, ren *render.Render, frac 
 			frac.B[x][y] == 0 {
 			continue
 		}
-		// a := math.Max(math.Max(value(ren.F, frac.R[x][y], rMax, ren.Factor, ren.Exposure),
-		// 	value(ren.F, frac.G[x][y], gMax, ren.Factor, ren.Exposure)),
-		// 	value(ren.F, frac.B[x][y], bMax, ren.Factor, ren.Exposure))
 
 		c := color.RGBA{
 			uint8(value(ren.F, frac.R[x][y], rMax, ren.Factor, ren.Exposure)),
