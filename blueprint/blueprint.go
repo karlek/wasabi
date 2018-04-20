@@ -125,7 +125,7 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 func parseRegistrer(registrer string) mandel.Registrer {
 	// Choose buddhabrot registrer.
 	switch strings.ToLower(registrer) {
-	case "anti":
+	case "anti", "converge", "converges":
 		return mandel.Converged
 	case "primitive":
 		return mandel.Primitive
