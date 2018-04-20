@@ -51,7 +51,7 @@ type Blueprint struct {
 
 	RegisterMode string // How the fractal will capture orbits. The different modes are: anti, primitive and escapes.
 
-	Plane string // Chose which major plane we will plot: Crci, Crzi, Zici, Zrci, Zrcr, Zrzi.
+	Plane string // Chose which capital plane we will plot: Crci, Crzi, Zici, Zrci, Zrcr, Zrzi.
 
 	BaseColor iro.RGBA   // The background color.
 	Gradient  []iro.RGBA // The color gradient used by the coloring methods.
@@ -87,6 +87,9 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 	// Coefficient multiplied inside the complex function we are investigating.
 	coefficient := complex(b.RealCoefficient, b.ImagCoefficient)
 
+	// Offset the fractal rendering.
+	offset := complex(b.Real, b.Imag)
+
 	// Our way of registering orbits. Either we register the orbits that either converges, diverges or both.
 	registerMode := parseRegistrer(b.RegisterMode)
 
@@ -109,8 +112,7 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 		parsePlane(b.Plane),
 		function,
 		b.Zoom,
-		b.Real,
-		b.Imag,
+		offset,
 		b.Seed,
 		b.PathPoints,
 		b.Tries,

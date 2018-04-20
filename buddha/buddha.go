@@ -90,7 +90,7 @@ func FillHistograms(frac *fractal.Fractal, workers int) float64 {
 // random point in it's domain and iterating it a number of times to see if it
 // converges or diverges.
 func arbitrary(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG, share int64, wg *sync.WaitGroup, bar *barcli.Bar) {
-	orbit := fractal.NewOrbitTrap(make([]complex128, frac.Iterations), complex(-1.14, 0))
+	orbit := &fractal.Orbit{Points: make([]complex128, frac.Iterations)}
 	var z, c complex128
 	var total, i int64
 	for i = 0; i < share; i++ {
@@ -314,9 +314,8 @@ func ptoc(z, c complex128, frac *fractal.Fractal) (p image.Point) {
 	tmp := frac.Plane(z, c)
 	r, i := real(tmp), imag(tmp)
 
-	ratio := float64(frac.Width) / float64(frac.Height)
-	p.X = int(frac.Zoom*float64(frac.Width/4)*(1/ratio)*(r+frac.OffsetReal) + float64(frac.Width)/2.0)
-	p.Y = int(frac.Zoom*float64(frac.Height/4)*(i+frac.OffsetImag) + float64(frac.Height)/2.0)
+	p.X = frac.X(r)
+	p.Y = frac.Y(i)
 
 	return p
 }

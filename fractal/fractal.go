@@ -44,7 +44,8 @@ func New(width, height int,
 	bailout float64,
 	plane func(complex128, complex128) complex128,
 	f func(complex128, complex128, complex128) complex128,
-	zoom, offsetReal, offsetImag float64,
+	zoom float64,
+	offset complex128,
 	seed int64,
 	points int64,
 	tries float64,
@@ -52,9 +53,16 @@ func New(width, height int,
 	theta float64,
 	threshold int64) *Fractal {
 	r, g, b := histo.New(width, height), histo.New(width, height), histo.New(width, height)
+
+	ratio := float64(width) / float64(height)
 	return &Fractal{
-		Width:      width,
-		Height:     height,
+		Width:  width,
+		Height: height,
+
+		ratio: ratio,
+		xZoom: zoom * float64(width/4) * (1 / ratio),
+		yZoom: zoom * float64(height/4),
+
 		Iterations: iterations,
 		R:          r,
 		G:          g,
@@ -64,43 +72,14 @@ func New(width, height int,
 		Bailout:    bailout,
 		Plane:      plane,
 		Zoom:       zoom,
-		OffsetReal: offsetReal,
-		OffsetImag: offsetImag,
+		Offset:     offset,
 		Seed:       seed,
-		Points:     points,
+		PathPoints: points,
 		Tries:      tries,
 		Register:   register,
 		Func:       f,
 		Theta:      theta,
 		Threshold:  threshold}
-}
-
-func NewStd(register func(complex128, complex128, *Orbit, *Fractal) int64) *Fractal {
-	colors := []iro.Color{
-		iro.RGBA{R: 1, G: 0, B: 0, A: 1},
-		iro.RGBA{R: 0, G: 1, B: 0, A: 1},
-		iro.RGBA{R: 0, G: 0, B: 1, A: 1},
-	}
-
-	method := coloring.NewColoring(iro.RGBA{0, 0, 0, 0}, coloring.IterationCount, colors, []float64{100 / 1e6, 0.2, 0.5})
-
-	return New(
-		4096, 4096,
-		1e6,
-		method,
-		complex(1, 0),
-		4,
-		Zrzi,
-		func(z, c, _ complex128) complex128 { return z*z + c },
-		1,
-		0.4,
-		0,
-		1,
-		80,
-		1e0,
-		register,
-		math.Pi,
-		20)
 }
 
 func Zrzi(z complex128, c complex128) complex128 { return complex(real(z), imag(z)) }
@@ -120,26 +99,38 @@ func (frac *Fractal) String() string {
 	fmt.Fprintf(w, "Coef:\t%v\n", frac.Coef)
 	fmt.Fprintf(w, "Bail:\t%f\n", frac.Bailout)
 	fmt.Fprintf(w, "Zoom:\t%f\n", frac.Zoom)
-	fmt.Fprintf(w, "Offset:\t%v\n", complex(frac.OffsetReal, frac.OffsetImag))
+	fmt.Fprintf(w, "Offset:\t%v\n", frac.Offset)
 	fmt.Fprintf(w, "Seed:\t%d\n", frac.Seed)
-	fmt.Fprintf(w, "Points:\t%d\n", frac.Points)
-	fmt.Fprintf(w, "Tries:\t%d\n", frac.Tries)
+	fmt.Fprintf(w, "Points:\t%d\n", frac.PathPoints)
+	fmt.Fprintf(w, "Tries:\t%.f\n", frac.Tries)
 	w.Flush()
 	return string(buf.Bytes())
 }
 
+// Clear removes old histogram data. Useful for interactive rendering.
 func (f *Fractal) Clear() {
 	f.R = histo.New(f.Width, f.Height)
 	f.G = histo.New(f.Width, f.Height)
 	f.B = histo.New(f.Width, f.Height)
 }
 
+// SetReference sets the reference image used for image trapping.
 func (f *Fractal) SetReference(i image.Image) {
 	f.reference = i
 }
 
+// ReferenceColor returns the color at the point in the reference image.
 func (f *Fractal) ReferenceColor(pt image.Point) (red, green, blue float64) {
 	r, g, b, _ := f.reference.At(pt.Y%f.reference.Bounds().Max.X, pt.X%f.reference.Bounds().Max.Y).RGBA()
 	red, green, blue = float64(r>>8)/256, float64(g>>8)/256, float64(b>>8)/256
 	return red, green, blue
+}
+
+func (f *Fractal) X(r float64) int {
+	return int(f.xZoom*(r+real(f.Offset)) + float64(f.Width)/2.0)
+
+}
+
+func (f *Fractal) Y(i float64) int {
+	return int(f.yZoom*(i+imag(f.Offset)) + float64(f.Height)/2.0)
 }
