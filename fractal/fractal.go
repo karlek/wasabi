@@ -35,8 +35,9 @@ type Fractal struct {
 	Threshold int64   // Threshold length of orbits.
 
 	// Coloring method specific options.
-	PathPoints int64       // Number of intermediate points used for path interpolation.
-	reference  image.Image // Reference image to sample pixel colors from.
+	PathPoints  int64       // Number of intermediate points used for path interpolation.
+	BezierLevel int         // Bezier interpolation level: 1 is linear, 2 is quadratic etc.
+	reference   image.Image // Reference image to sample pixel colors from.
 
 	// Calculation specific.
 	ratio float64
