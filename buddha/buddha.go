@@ -185,7 +185,7 @@ outer:
 }
 
 func iterative(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG, share int64, wg *sync.WaitGroup, bar *barcli.Bar) {
-	orbit := fractal.NewOrbitTrap(make([]complex128, frac.Iterations), complex(0, 0))
+	orbit := &fractal.Orbit{Points: make([]complex128, frac.Iterations)}
 	var total int64
 	z := complex(0, 0)
 	c := complex(0, 0)
