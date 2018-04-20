@@ -8,11 +8,11 @@ import (
 // for a specific fractal.
 type Registrer func(complex128, complex128, *fractal.Orbit, *fractal.Fractal) int64
 
-// isInBulb returns true if the point c is in one of the larger bulb's of the
+// IsInBulb returns true if the point c is in one of the larger bulb's of the
 // mandelbrot.
 //
 // Credits: https://github.com/morcmarc/buddhabrot/blob/master/buddhabrot.go
-func isInBulb(c complex128) bool {
+func IsInBulb(c complex128) bool {
 	Cr, Ci := real(c), imag(c)
 	// Main cardioid
 	if !(((Cr-0.25)*(Cr-0.25)+(Ci*Ci))*(((Cr-0.25)*(Cr-0.25)+(Ci*Ci))+(Cr-0.25)) < 0.25*Ci*Ci) {
@@ -63,7 +63,7 @@ func abs(c complex128) float64 {
 func Escaped(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int64 {
 	// We ignore all values that we know are in the bulb, and will therefore
 	// converge.
-	if isInBulb(c) {
+	if IsInBulb(c) {
 		return -1
 	}
 
@@ -92,7 +92,7 @@ func Escaped(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int64
 // Converged returns all points in the domain of the complex function before
 // diverging.
 func Converged(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int64 {
-	if isInBulb(c) {
+	if IsInBulb(c) {
 		return -1
 	}
 	// Saved value for cycle-detection.
@@ -122,12 +122,11 @@ func Converged(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int
 
 // Primitive returns all points in the domain of the complex function
 // diverging.
-func Primitive(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int64 {
+func Primitive(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) (i int64) {
 	// Saved value for cycle-detection.
 	var bfract complex128
 
 	// See if the complex function diverges before we reach our iteration count.
-	var i int64
 	for i = 0; i < frac.Iterations; i++ {
 		z = frac.Func(z, c, frac.Coef)
 		if IsCycle(z, &bfract, i) {

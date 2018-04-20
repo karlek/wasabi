@@ -5,7 +5,7 @@ import "github.com/karlek/wasabi/fractal"
 func EscapedClean(z, c complex128, frac *fractal.Fractal) (complex128, int64) {
 	// We ignore all values that we know are in the bulb, and will therefore
 	// converge.
-	// if isInBulb(c) {
+	// if IsInBulb(c) {
 	// 	return z, -1
 	// }
 
@@ -35,7 +35,7 @@ func FieldLines(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) in
 	g := 10000.0
 	// We ignore all values that we know are in the bulb, and will therefore
 	// converge.
-	if isInBulb(c) {
+	if IsInBulb(c) {
 		return -1
 	}
 
@@ -69,7 +69,7 @@ func FieldLinesEscapes(z, c complex128, g float64, frac *fractal.Fractal) (compl
 	zp := complex(0, 0)
 	// We ignore all values that we know are in the bulb, and will therefore
 	// converge.
-	if isInBulb(c) {
+	if IsInBulb(c) {
 		return z, -1
 	}
 
