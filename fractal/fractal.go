@@ -4,36 +4,48 @@ import (
 	"bytes"
 	"fmt"
 	"image"
-	"math"
 	"text/tabwriter"
 
 	"github.com/karlek/wasabi/coloring"
 	"github.com/karlek/wasabi/histo"
-	"github.com/karlek/wasabi/iro"
 	"github.com/karlek/wasabi/util"
 )
 
+// Fractal contains all options for rendering a specific fractal.
 type Fractal struct {
-	Width, Height int
-	R, G, B       histo.Histo
-	Method        *coloring.Coloring
-	// Fractal specific.
-	Iterations int64
-	Plane      func(complex128, complex128) complex128
-	Func       func(complex128, complex128, complex128) complex128
-	Register   func(complex128, complex128, *Orbit, *Fractal) int64
-	Coef       complex128
-	Bailout    float64
-	Zoom       float64
-	Theta      float64
-	Theta2     float64
-	OffsetReal float64
-	OffsetImag float64
-	Seed       int64
-	Points     int64
-	Threshold  int64
-	Tries      float64
-	reference  image.Image
+	Width, Height int                // The width and height of the image to be constructed.
+	R, G, B       histo.Histo        // The red, green and blue histograms.
+	Method        *coloring.Coloring // Coloring method for the orbits.
+
+	// Function specific options.
+	Iterations int64                                                // Number of iterations before assuming convergence.
+	Bailout    float64                                              // (Squared) bailout radius.
+	Plane      func(complex128, complex128) complex128              // Function to chose the capital plane.
+	Func       func(complex128, complex128, complex128) complex128  // The complex function to explore!
+	Register   func(complex128, complex128, *Orbit, *Fractal) int64 // Registering function for the orbits.
+	Coef       complex128                                           // Complex coefficient used in the complex function.
+
+	// Rendering specific options.
+	Zoom   float64    // Zoom level of our render.
+	Offset complex128 // Offset the camera center for the render.
+
+	// Sampling specific options.
+	Tries     float64 // Number of orbit attempts we will sample.
+	Seed      int64   // The random seed we sample random points from.
+	Threshold int64   // Threshold length of orbits.
+
+	// Coloring method specific options.
+	PathPoints int64       // Number of intermediate points used for path interpolation.
+	reference  image.Image // Reference image to sample pixel colors from.
+
+	// Calculation specific.
+	ratio float64
+	xZoom float64
+	yZoom float64
+
+	// Experimental options.
+	Theta  float64 // Matrix rotation angle.
+	Theta2 float64 // Second matrix rotation angle.
 }
 
 // New returns a new render for fractals.
