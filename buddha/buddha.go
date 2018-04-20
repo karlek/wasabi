@@ -112,30 +112,41 @@ func arbitrary(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG
 	go func() { totChan <- total }()
 }
 
+// Attempt tries to find valid orbit from the points z and c and returns the length of the orbit inside the image space.
 func Attempt(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int64 {
-	it := frac.Register(z, c, orbit, frac)
-	if it == -1 {
+	// Iterations completed by the complex function.
+	iterations := frac.Register(z, c, orbit, frac)
+	// Reject unregistered orbits.
+	if iterations == -1 {
 		return 0
 	}
-	var length int64
-
-	switch frac.Method.Mode() {
-	case coloring.OrbitLength:
-		length = registerColoredOrbit(it, orbit, frac)
-	case coloring.IterationCount:
-		length = registerOrbit(it, orbit, frac)
-	case coloring.Modulo:
-		length = registerOrbit(it, orbit, frac)
-	case coloring.VectorField:
-		length = registerField(it, orbit, frac)
-	case coloring.Path:
-		length = registerPaths(it, orbit, frac)
-	case coloring.Image:
-		length = registerImage(it, orbit, frac)
+	// Cull too short orbits.
+	if iterations < frac.Threshold {
+		return 0
 	}
-	return length
+
+	// The number of pixels we registered inside the image space.
+	var pixels int64
+	switch frac.Method.Mode() {
+	case coloring.Modulo:
+		fallthrough
+	case coloring.IterationCount:
+		pixels = registerOrbit(iterations, orbit, frac)
+	case coloring.OrbitLength:
+		pixels = registerColoredOrbit(iterations, orbit, frac)
+	case coloring.VectorField:
+		pixels = registerField(iterations, orbit, frac)
+	case coloring.Path:
+		pixels = registerPaths(iterations, orbit, frac)
+	case coloring.Image:
+		pixels = registerImage(iterations, orbit, frac)
+	}
+	return pixels
 }
 
+// IsLongOrbit returns true if the orbit is considered long.
+//
+// length > max(20, threshold, iterations/1e4)
 func IsLongOrbit(length int64, frac *fractal.Fractal) bool {
 	return float64(length) > math.Max(20, math.Max(float64(frac.Threshold), float64(frac.Iterations)/1e4))
 }
@@ -211,12 +222,7 @@ func iterative(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG
 	totChan <- total
 }
 
-func registerColoredOrbit(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) int64 {
-	if it < frac.Threshold {
-		return 0
-	}
-
-	var sum int64
+func registerColoredOrbit(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) (sum int64) {
 	// Get color from gradient based on iteration count of the orbit.
 	for i, p := range orbit.Points[:it] {
 		red, green, blue := frac.Method.Get(int64(i), it)
@@ -227,12 +233,7 @@ func registerColoredOrbit(it int64, orbit *fractal.Orbit, frac *fractal.Fractal)
 
 // registerOrbit register the points in an orbit in r, g, b channels depending
 // on it's iteration count.
-func registerOrbit(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) int64 {
-	if it < frac.Threshold {
-		return 0
-	}
-
-	var sum int64
+func registerOrbit(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) (sum int64) {
 	// Get color from gradient based on iteration count of the orbit.
 	red, green, blue := frac.Method.Get(it, frac.Iterations)
 	for _, p := range orbit.Points[:it] {
@@ -241,12 +242,8 @@ func registerOrbit(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) int64 
 	return sum
 }
 
-func registerField(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) int64 {
-	if it < frac.Threshold {
-		return 0
-	}
-
-	var sum, i int64
+func registerField(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) (sum int64) {
+	var i int64
 	// Index of previous point.
 	for i = 0; i < it-1; i++ {
 		// Index of posterior point.
@@ -320,12 +317,7 @@ func ptoc(z, c complex128, frac *fractal.Fractal) (p image.Point) {
 	return p
 }
 
-func registerImage(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) int64 {
-	if it == -1 {
-		return -1
-	}
-
-	var sum int64
+func registerImage(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) (sum int64) {
 	// Get color from gradient based on iteration count of the orbit.
 	for _, p := range orbit.Points[:it] {
 		sum += registerPointReferene(p, orbit, frac)
