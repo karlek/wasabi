@@ -66,7 +66,7 @@ var (
 	coefficient     complex128
 
 	// Coloring mode.
-	mode    coloring.Type
+	mode    coloring.Mode
 	modeStr string
 
 	// Zoom level around _offset_.

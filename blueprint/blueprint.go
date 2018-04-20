@@ -182,7 +182,7 @@ func parsePlane(plane string) func(complex128, complex128) complex128 {
 }
 
 // parseModeFlag parses the _mode_ string to a coloring function.
-func parseModeFlag(mode string) coloring.Type {
+func parseModeFlag(mode string) coloring.Mode {
 	switch strings.ToLower(mode) {
 	case "iteration":
 		return coloring.IterationCount
