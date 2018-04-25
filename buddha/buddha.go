@@ -19,7 +19,6 @@ import (
 // their points in a histogram.
 func FillHistograms(frac *fractal.Fractal, workers int) float64 {
 	bar, _ := barcli.New(int(frac.Tries * float64(frac.Width*frac.Height)))
-	// if !silent {
 	go func(bar *barcli.Bar) {
 		for {
 			if bar.Done() {
@@ -29,7 +28,6 @@ func FillHistograms(frac *fractal.Fractal, workers int) float64 {
 			time.Sleep(1000 * time.Millisecond)
 		}
 	}(bar)
-	// }
 
 	wg := new(sync.WaitGroup)
 	wg.Add(workers)
@@ -102,6 +100,11 @@ func arbitrary(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG
 		if IsLongOrbit(length, frac) {
 			i += searchNearby(z, c, orbit, frac, &total, bar)
 		}
+
+		// Plot sampling map.
+		if frac.PlotImportance {
+			importance(z, c, frac, length)
+		}
 	}
 	wg.Done()
 	go func() { totChan <- total }()
@@ -172,6 +175,11 @@ outer:
 
 			length := Attempt(z, cprim, orbit, frac)
 			(*total) += length
+
+			if frac.PlotImportance {
+				importance(z, c, frac, length)
+			}
+
 			if !IsLongOrbit(length, frac) {
 				break outer
 			}

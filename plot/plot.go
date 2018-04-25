@@ -12,29 +12,22 @@ import (
 	"github.com/karlek/wasabi/render"
 )
 
-var (
-	importance histo.Histo // Importance map of the sampling.
-)
-
 // TODO(_): Rewrite importance mapping.
-func Importance(width, height int, filePng, fileJpg bool) (err error) {
-	// 	fscale := func(v, max float64) float64 {
-	// 		return math.Min(((1 - math.Exp(-1*v)) / (1 - math.Exp(-1*max)) * 255), 255)
-	// 	}
-	// 	img := image.NewRGBA(image.Rect(0, 0, width, height))
+func Importance(ren *render.Render, frac *fractal.Fractal) {
+	fscale := func(v, max float64) float64 {
+		return value(Exp, v, max, 1e1, 1*ren.Exposure)
+	}
 
-	// 	impMax := histo.Max(importance)
-	// 	for x, col := range importance {
-	// 		for y, v := range col {
-	// 			if importance[x][y] == 0 {
-	// 				continue
-	// 			}
-	// 			c := uint8(fscale(v, impMax))
-	// 			img.SetRGBA(y, x, color.RGBA{c, c, c, 255})
-	// 		}
-	// 	}
-	// 	return Render(img, filePng, fileJpg, "importance")
-	return
+	impMax := histo.Max(frac.Importance)
+	for x, col := range frac.Importance {
+		for y, v := range col {
+			if frac.Importance[x][y] == 0 {
+				continue
+			}
+			c := uint8(fscale(v, impMax))
+			ren.Image.SetRGBA(y, x, color.RGBA{c, c, c, 255})
+		}
+	}
 }
 
 // Plot visualizes the histograms values as an image. It equalizes the

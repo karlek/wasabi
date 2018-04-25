@@ -130,13 +130,18 @@ func renderBuddha(blueprintPath string) (err error) {
 	// ren.Factor = factor
 	// ren.F = f
 
-	if !silent {
-		fmt.Println(ren)
-	}
+	// if !silent {
+	// 	fmt.Println(ren)
+	// }
 
-	if histo.Max(frac.R)+histo.Max(frac.G)+histo.Max(frac.B) == 0 {
-		out += "-black"
-		return fmt.Errorf("black")
+	// Importance map.
+	if frac.PlotImportance {
+		logrus.Println("[-] Plotting importance map.")
+		impRen := render.New(frac.Width, frac.Height, ren.F, ren.Factor, ren.Exposure)
+		plot.Importance(impRen, frac)
+		if err := impRen.Render(blue.Png, blue.Jpg, "importance"); err != nil {
+			return err
+		}
 	}
 
 	plot.Plot(ren, frac)

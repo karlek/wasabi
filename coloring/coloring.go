@@ -46,6 +46,8 @@ func (c *Coloring) Get(i int64, it int64) (float64, float64, float64) {
 		return c.orbit(i, it)
 	case IterationCount:
 		return c.iteration(i, it)
+	case Path:
+		return c.vector(i, it)
 	default:
 		return c.modulo(i)
 	}

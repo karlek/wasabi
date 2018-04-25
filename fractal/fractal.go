@@ -6,6 +6,8 @@ import (
 	"image"
 	"text/tabwriter"
 
+	rand7i "github.com/7i/rand"
+
 	"github.com/karlek/wasabi/coloring"
 	"github.com/karlek/wasabi/histo"
 	"github.com/karlek/wasabi/util"
@@ -16,6 +18,9 @@ type Fractal struct {
 	Width, Height int                // The width and height of the image to be constructed.
 	R, G, B       histo.Histo        // The red, green and blue histograms.
 	Method        *coloring.Coloring // Coloring method for the orbits.
+
+	Importance     histo.Histo // Histogram of sampled points and their importance.
+	PlotImportance bool        // Create an image of the sampling points color graded by their importance.
 
 	// Function specific options.
 	Iterations int64                                                // Number of iterations before assuming convergence.
@@ -59,13 +64,16 @@ func New(width, height int,
 	f func(complex128, complex128, complex128) complex128,
 	zoom float64,
 	offset complex128,
+	plotImportance bool,
 	seed int64,
 	points int64,
+	bezierLevel int,
 	tries float64,
 	register func(complex128, complex128, *Orbit, *Fractal) int64,
 	theta float64,
 	threshold int64) *Fractal {
 	r, g, b := histo.New(width, height), histo.New(width, height), histo.New(width, height)
+	importance := histo.New(width, height)
 
 	ratio := float64(width) / float64(height)
 	return &Fractal{
@@ -76,23 +84,28 @@ func New(width, height int,
 		xZoom: zoom * float64(width/4) * (1 / ratio),
 		yZoom: zoom * float64(height/4),
 
-		Iterations: iterations,
-		R:          r,
-		G:          g,
-		B:          b,
-		Method:     method,
-		Coef:       coef,
-		Bailout:    bailout,
-		Plane:      plane,
-		Zoom:       zoom,
-		Offset:     offset,
-		Seed:       seed,
-		PathPoints: points,
-		Tries:      tries,
-		Register:   register,
-		Func:       f,
-		Theta:      theta,
-		Threshold:  threshold}
+
+		Importance:     importance,
+		PlotImportance: plotImportance,
+
+		Iterations:  iterations,
+		R:           r,
+		G:           g,
+		B:           b,
+		Method:      method,
+		Coef:        coef,
+		Bailout:     bailout,
+		Plane:       plane,
+		Zoom:        zoom,
+		Offset:      offset,
+		Seed:        seed,
+		PathPoints:  points,
+		BezierLevel: bezierLevel,
+		Tries:       tries,
+		Register:    register,
+		Func:        f,
+		Theta:       theta,
+		Threshold:   threshold}
 }
 
 func Zrzi(z complex128, c complex128) complex128 { return complex(real(z), imag(z)) }
@@ -121,20 +134,20 @@ func (frac *Fractal) String() string {
 }
 
 // Clear removes old histogram data. Useful for interactive rendering.
-func (f *Fractal) Clear() {
-	f.R = histo.New(f.Width, f.Height)
-	f.G = histo.New(f.Width, f.Height)
-	f.B = histo.New(f.Width, f.Height)
+func (frac *Fractal) Clear() {
+	frac.R = histo.New(frac.Width, frac.Height)
+	frac.G = histo.New(frac.Width, frac.Height)
+	frac.B = histo.New(frac.Width, frac.Height)
 }
 
 // SetReference sets the reference image used for image trapping.
-func (f *Fractal) SetReference(i image.Image) {
-	f.reference = i
+func (frac *Fractal) SetReference(i image.Image) {
+	frac.reference = i
 }
 
 // ReferenceColor returns the color at the point in the reference image.
-func (f *Fractal) ReferenceColor(pt image.Point) (red, green, blue float64) {
-	r, g, b, _ := f.reference.At(pt.Y%f.reference.Bounds().Max.X, pt.X%f.reference.Bounds().Max.Y).RGBA()
+func (frac Fractal) ReferenceColor(pt image.Point) (red, green, blue float64) {
+	r, g, b, _ := frac.reference.At(pt.Y%frac.reference.Bounds().Max.X, pt.X%frac.reference.Bounds().Max.Y).RGBA()
 	red, green, blue = float64(r>>8)/256, float64(g>>8)/256, float64(b>>8)/256
 	return red, green, blue
 }

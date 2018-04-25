@@ -36,7 +36,7 @@ type Blueprint struct {
 
 	CacheHistograms   bool // Cache the histograms by saving them to a file.
 	MultipleExposures bool // Render the image with multiple exposures.
-	// DrawSamplingMap bool
+	PlotImportance    bool // Create an image of the sampling points color graded by their importance.
 
 	Imag      float64 // Offset on the imaginary-value axis.
 	Real      float64 // Offset on the real-value axis.
@@ -116,6 +116,7 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 		function,
 		b.Zoom,
 		offset,
+		b.PlotImportance,
 		b.Seed,
 		b.PathPoints,
 		b.BezierLevel,
