@@ -1,10 +1,10 @@
+// Package buddha provides functions for high performance parallel rendering of
+// the buddhabrot fractal and it's complex cousins.
 package buddha
 
 import (
-	"fmt"
 	"image"
 	"math"
-	"math/rand"
 	"sync"
 	"time"
 
@@ -63,7 +63,6 @@ func FillHistograms(frac *fractal.Fractal, workers int) float64 {
 		// Our worker channel to send our orbits on!
 		rng := rand7i.NewComplexRNG(int64(n+1) + frac.Seed)
 		go arbitrary(totChan, frac, &rng, share, wg, bar)
-		// go iterative(totChan, frac, &rng, share, wg, bar)
 	}
 	wg.Wait()
 
@@ -76,13 +75,9 @@ func FillHistograms(frac *fractal.Fractal, workers int) float64 {
 			break
 		}
 	}
-
-	// if !silent {
 	bar.SetMax()
 	bar.Print()
-	// }
 
-	fmt.Println("Yeah", float64(totals)/float64(orbitTries))
 	return float64(totals) / float64(orbitTries)
 }
 
@@ -151,12 +146,14 @@ func IsLongOrbit(length int64, frac *fractal.Fractal) bool {
 	return float64(length) > math.Max(20, math.Max(float64(frac.Threshold), float64(frac.Iterations)/1e4))
 }
 
+// searchNearby samples points from nearby a point which rendered a long orbit
+// with increasingly smaller larger steps out from the point.
 func searchNearby(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal, total *int64, bar *barcli.Bar) (i int64) {
 	h, tol := 1e-15, 1e-2
 	var orbits int64
 
 outer:
-	for ; h < tol; h *= 10 {
+	for ; h < tol; h *= 1e1 {
 		cr, ci := real(c), imag(c)
 
 		cs := []complex128{

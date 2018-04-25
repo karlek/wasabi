@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"strings"
 
+	rand7i "github.com/7i/rand"
+
 	"github.com/karlek/wasabi/coloring"
 	"github.com/karlek/wasabi/fractal"
 	"github.com/karlek/wasabi/iro"
@@ -24,8 +26,9 @@ type Blueprint struct {
 
 	Coloring string // Coloring method for the orbits.
 
-	DrawPath   bool  // Draw the path between points in the orbit.
-	PathPoints int64 // The number of intermediate points to use for interpolation.
+	DrawPath    bool  // Draw the path between points in the orbit.
+	PathPoints  int64 // The number of intermediate points to use for interpolation.
+	BezierLevel int   // Bezier interpolation level: 1 is linear, 2 is quadratic etc.
 
 	Width, Height  int    // Width and height of final image.
 	Png, Jpg       bool   // Image output format.
@@ -115,6 +118,7 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 		offset,
 		b.Seed,
 		b.PathPoints,
+		b.BezierLevel,
 		b.Tries,
 		registerMode,
 		b.Theta,
