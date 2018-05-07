@@ -60,6 +60,9 @@ type Blueprint struct {
 	Gradient  []iro.RGBA // The color gradient used by the coloring methods.
 	Range     []float64  // The interpolation points for the gradient.
 
+	ZUpdate string // Chose how we shall update Z.
+	CUpdate string // Chose how we shall update C.
+
 	Theta float64 // Rotation angle. Experimental option since it demands matrix rotation which slows down the renders considerably on CPU based renders.
 }
 
@@ -101,6 +104,9 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 		return coef*complex(real(z), imag(z))*complex(real(z), imag(z)) + coef*complex(real(c), imag(c))
 	}
 
+	z := parseZandC(b.ZUpdate)
+	c := parseZandC(b.CUpdate)
+
 	colors := iro.ToColors(b.Gradient)
 	method := coloring.NewColoring(b.BaseColor, parseModeFlag(b.Coloring), colors, b.Range)
 
@@ -123,6 +129,7 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 		b.Tries,
 		registerMode,
 		b.Theta,
+		z, c,
 		int64(b.Threshold))
 
 	frac.Func = mandel.Mandelbrot
@@ -208,4 +215,17 @@ func parseModeFlag(mode string) coloring.Mode {
 		logrus.Fatalln("invalid coloring function:", mode)
 	}
 	return coloring.IterationCount
+}
+
+// parseZandC choses the sampling methods for our original points.
+func parseZandC(mode string) func(*rand7i.ComplexRNG) complex128 {
+	switch strings.ToLower(mode) {
+	case "random":
+		return fractal.RandomPoint
+	case "origo":
+		return func(_ *rand7i.ComplexRNG) complex128 { return complex(0, 0) }
+	default:
+		logrus.Fatalln("invalid z or c strategy:", mode)
+	}
+	return fractal.RandomPoint
 }

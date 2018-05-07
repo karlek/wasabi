@@ -87,12 +87,9 @@ func arbitrary(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG
 	var z, c complex128
 	var total, i int64
 	for i = 0; i < share; i++ {
-		// Increase progress bar.
-		bar.Inc()
-
-		// Our random point which, hopefully, will create an orbit!
-		// z = rng.Complex128Go()
-		c = rng.Complex128Go()
+		// Our random points which, hopefully, will create an orbit!
+		z = frac.Z(rng)
+		c = frac.C(rng)
 		orbit.C = c
 
 		length := Attempt(z, c, orbit, frac)
@@ -105,6 +102,9 @@ func arbitrary(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG
 		if frac.PlotImportance {
 			importance(z, c, frac, length)
 		}
+
+		// Increase progress bar.
+		bar.Inc()
 	}
 	wg.Done()
 	go func() { totChan <- total }()
