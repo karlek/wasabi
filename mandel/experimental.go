@@ -1,34 +1,8 @@
 package mandel
 
-import "github.com/karlek/wasabi/fractal"
-
-func EscapedClean(z, c complex128, frac *fractal.Fractal) (complex128, int64) {
-	// We ignore all values that we know are in the bulb, and will therefore
-	// converge.
-	// if IsInBulb(c) {
-	// 	return z, -1
-	// }
-
-	// Saved value for cycle-detection.
-	var bfract complex128
-
-	// See if the complex function diverges before we reach our iteration count.
-	var i int64
-	for i = 0; i < frac.Iterations; i++ {
-		z = frac.Func(z, c, frac.Coef)
-		if IsCycle(z, &bfract, i) {
-			return z, -1
-		}
-
-		// This point diverges, so we all the preceeding points are interesting
-		// and will be registered.
-		if IsOutside(z, frac.Bailout) {
-			return z, i
-		}
-	}
-	// This point converges; assumed under the number of iterations.
-	return z, -1
-}
+import (
+	"github.com/karlek/wasabi/fractal"
+)
 
 func FieldLines(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int64 {
 	zp := complex(0, 0)
