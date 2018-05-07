@@ -66,8 +66,10 @@ func (g Gradient) Len() int {
 // be inside the range of the gradient, if it isn't the base color will be used.
 func (g Gradient) Lookup(t float64) Color {
 	index := int(t * float64(len(g.table)))
-	if index < 0 || index >= len(g.table) {
+	if index < 0 {
 		return g.Base
+	} else if index >= len(g.table) {
+		return g.table[len(g.table)-1]
 	}
 	return g.table[index]
 }
@@ -78,8 +80,11 @@ func (g Gradient) lookup(t float64) Color {
 	// Find the two colors nearest t and interpolate between them.
 	lower := g.Stops[0]
 	upper := g.Stops[len(g.Stops)-1]
-	if t < lower || t > upper {
+	if t < lower {
 		return g.Base
+	}
+	if t > upper {
+		return g.table[len(g.table)-1]
 	}
 
 	lowerIndex := 0
