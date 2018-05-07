@@ -56,7 +56,6 @@ func FieldLinesEscapes(z, c complex128, frac *fractal.Fractal, g float64) (compl
 		// This point diverges, so we all the preceeding points are interesting
 		// and will be registered.
 		real, imag, rp, ip := real(z), imag(z), real(zp), imag(zp)
-		// fmt.Println(i, z, real, rp, math.Abs(real/rp))
 		if real > 0 && imag > 0 {
 			ip = -ip
 		}
