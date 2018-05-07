@@ -6,18 +6,20 @@ import (
 	"github.com/karlek/wasabi/fractal"
 )
 
-// OrbitTrap returns the smallest distance and it's point from a distance function calculated on each point in the orbit.
+// OrbitTrap returns the smallest distance and it's point from a distance
+// function calculated on each point in the orbit.
 func OrbitTrap(z, c complex128, frac *fractal.Fractal, trap func(complex128) float64) (dist float64, closest complex128) {
 	// Arbitrarily chosen high number.
 	dist = math.MaxFloat64
 
-	// We can't assume bulb convergence since we're interested in the orbit trap
-	// functions value.
+	// We can't assume bulb convergence since we're interested in the orbit
+	// trap functions value.
 
 	// Saved value for cycle-detection.
 	var bfract complex128
 
-	// See if the complex function diverges before we reach our iteration count.
+	// See if the complex function diverges before we reach our iteration
+	// count.
 	var i int64
 	for i = 0; i < frac.Iterations; i++ {
 		z = frac.Func(z, c, frac.Coef)
@@ -30,11 +32,10 @@ func OrbitTrap(z, c complex128, frac *fractal.Fractal, trap func(complex128) flo
 			return math.Sqrt(dist), closest
 		}
 
-		// This point diverges, so we all the preceeding points are interesting
-		// and will be registered.
+		// This point diverges, so we return the smallest distance and the
+		// point that was closest to the trap.
 		if IsOutside(z, frac.Bailout) {
-			// return math.Sqrt(dist), closest
-			return 1e9, closest
+			return math.Sqrt(dist), closest
 		}
 	}
 	// This point converges; assumed under the number of iterations.
