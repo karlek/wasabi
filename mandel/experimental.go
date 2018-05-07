@@ -39,13 +39,8 @@ func FieldLines(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) in
 	return -1
 }
 
-func FieldLinesEscapes(z, c complex128, g float64, frac *fractal.Fractal) (complex128, int64) {
+func FieldLinesEscapes(z, c complex128, frac *fractal.Fractal, g float64) (complex128, int64) {
 	zp := complex(0, 0)
-	// We ignore all values that we know are in the bulb, and will therefore
-	// converge.
-	if IsInBulb(c) {
-		return z, -1
-	}
 
 	// Saved value for cycle-detection.
 	var bfract complex128
@@ -60,8 +55,12 @@ func FieldLinesEscapes(z, c complex128, g float64, frac *fractal.Fractal) (compl
 
 		// This point diverges, so we all the preceeding points are interesting
 		// and will be registered.
-		if real, imag, rp, ip := real(z), imag(z), real(zp), imag(zp); real/rp > g && imag/ip > g {
-			// fmt.Println(real, imag, rp, ip)
+		real, imag, rp, ip := real(z), imag(z), real(zp), imag(zp)
+		// fmt.Println(i, z, real, rp, math.Abs(real/rp))
+		if real > 0 && imag > 0 {
+			ip = -ip
+		}
+		if real/rp > g && imag/ip > g {
 			return z, i
 		}
 		// Only boundary with values for g == 0.1
