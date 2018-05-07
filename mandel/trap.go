@@ -42,32 +42,30 @@ func OrbitTrap(z, c complex128, frac *fractal.Fractal, trap func(complex128) flo
 	return math.Sqrt(dist), closest
 }
 
-// sign returns -1 for negative numbers or 1 for positive numbers.
-func sign(f float64) float64 {
-	if f < 0 {
-		return -1
-	}
-	return 1
-}
-
 // Pickover calculates the distance between the point and the coordinate axis.
-func Pickover(z complex128) float64 {
-	// Distance to y-axis.
-	dist := DistToLine(z, complex(0, 0), complex(1, 0))
-	// Distance to x-axis.
-	dist += DistToLine(z, complex(0, 0), complex(0, 1))
-
-	return dist
+func Pickover(p complex128) func(complex128) float64 {
+	return func(z complex128) float64 {
+		// Distance to y-axis.
+		xd := math.Abs(real(z) + real(p))
+		// Distance to x-axis.
+		yd := math.Abs(imag(z) + imag(p))
+		return math.Min(xd, yd)
+	}
 }
 
-// Line calculates the distance between the point and the line y=x.
-//
-// TODO(_): Remove the hard-coding of the line function.
-func Line(z complex128) float64 {
-	p0 := complex(0.0, 0.0)
-	dir := complex(0, 1)
+// Line calculates the distance between the point and a line given by a point
+// (on the line) and direction.
+func Line(p0, dir complex128) func(complex128) float64 {
+	return func(z complex128) float64 {
+		return DistToLine(z, p0, dir)
+	}
+}
 
-	return DistToLine(z, p0, dir)
+// Point returns the distance between the point z and the trap point.
+func Point(trap complex128) func(complex128) float64 {
+	return func(z complex128) float64 {
+		return abs(z - trap)
+	}
 }
 
 // DistToLine returns the distance between the point z and a line function
@@ -82,4 +80,12 @@ func DistToLine(z, p0, dir complex128) float64 {
 	// Vector between the closest point on the line and the point.
 	n := z - p
 	return abs(n)
+}
+
+// sign returns -1 for negative numbers or 1 for positive numbers.
+func sign(f float64) float64 {
+	if f < 0 {
+		return -1
+	}
+	return 1
 }
