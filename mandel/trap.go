@@ -6,13 +6,10 @@ import (
 	"github.com/karlek/wasabi/fractal"
 )
 
-func OrbitPointTrap(z, c, trap complex128, frac *fractal.Fractal) (float64, complex128) {
-	return OrbitTrap(z, c, func(z complex128) float64 { return abs(z - trap) }, frac)
-}
-
-func OrbitTrap(z, c complex128, trap func(complex128) float64, frac *fractal.Fractal) (float64, complex128) {
-	dist := 1e9
-	closest := z
+// OrbitTrap returns the smallest distance and it's point from a distance function calculated on each point in the orbit.
+func OrbitTrap(z, c complex128, frac *fractal.Fractal, trap func(complex128) float64) (dist float64, closest complex128) {
+	// Arbitrarily chosen high number.
+	dist = math.MaxFloat64
 
 	// We can't assume bulb convergence since we're interested in the orbit trap
 	// functions value.
@@ -24,7 +21,7 @@ func OrbitTrap(z, c complex128, trap func(complex128) float64, frac *fractal.Fra
 	var i int64
 	for i = 0; i < frac.Iterations; i++ {
 		z = frac.Func(z, c, frac.Coef)
-		// dist = math.Min(dist, trap(z))
+		// Calculate and maybe save the distance of our new point.
 		if newDist := trap(z); dist > newDist {
 			dist = newDist
 			closest = z
