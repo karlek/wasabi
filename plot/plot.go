@@ -98,3 +98,7 @@ func value(f func(float64, float64) float64, v, max, factor, exposure float64) f
 func scale(f func(float64, float64) float64, max, factor, exposure float64) float64 {
 	return (255 * exposure) / f(max, factor)
 }
+
+func Value(f func(float64, float64) float64, v, max, factor, exposure float64) float64 {
+	return value(f, v, max, factor, exposure)
+}

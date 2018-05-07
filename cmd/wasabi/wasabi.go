@@ -112,6 +112,10 @@ func renderBuddha(blueprintPath string) (err error) {
 		}
 	} else {
 		ren.OrbitRatio = buddha.FillHistograms(frac, runtime.NumCPU())
+		if histo.Max(frac.R)+histo.Max(frac.G)+histo.Max(frac.B) == 0 {
+			out += "-black"
+			return fmt.Errorf("black")
+		}
 		if blue.CacheHistograms {
 			logrus.Println("[i] Saving r, g, b channels")
 			if err := saveArt(frac); err != nil {
@@ -122,6 +126,7 @@ func renderBuddha(blueprintPath string) (err error) {
 	if factor != -1 {
 		ren.Factor = factor
 	}
+	logrus.Println("[i] Density", ren.OrbitRatio)
 	// div := (3 * 10 * ren.OrbitRatio * frac.Tries * float64((histo.Max(frac.R) + histo.Max(frac.G) + histo.Max(frac.B))))
 	// div := ren.OrbitRatio * frac.Tries
 	// fmt.Println(div)

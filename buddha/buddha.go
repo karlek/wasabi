@@ -13,7 +13,11 @@ import (
 	"github.com/karlek/progress/barcli"
 	"github.com/karlek/wasabi/coloring"
 	"github.com/karlek/wasabi/fractal"
+	"github.com/karlek/wasabi/iro"
 )
+
+// var rotX *mat64.Dense
+// var rotSomething *mat64.Dense
 
 // FillHistograms creates a number of workers which finds orbits and stores
 // their points in a histogram.
@@ -189,131 +193,7 @@ outer:
 	return orbits
 }
 
-func iterative(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG, share int64, wg *sync.WaitGroup, bar *barcli.Bar) {
-	orbit := &fractal.Orbit{Points: make([]complex128, frac.Iterations)}
-	var total int64
-	z := complex(0, 0)
-	c := complex(0, 0)
-	h := 4 / math.Sqrt(float64(share))
-
-	var x, y float64
-	var i int64
-	nudge := math.Abs(rand.Float64()) * h
-	for 100*nudge > h {
-		nudge /= 10
-	}
-	h = h + nudge
-	for y = -2; y <= 2; y += h {
-		nudge := math.Abs(rand.Float64()) * h
-		for 100*nudge > h {
-			nudge /= 10
-		}
-		k := h + nudge
-		for x = -2; x <= 2; x += k {
-			bar.Inc()
-			c = complex(x, y)
-
-			z = rng.Complex128Go()
-
-			length := Attempt(z, c, orbit, frac)
-			total += length
-			i++
-			if IsLongOrbit(length, frac) {
-				i += searchNearby(z, c, orbit, frac, &total, bar)
-			}
-		}
-	}
-	wg.Done()
-	totChan <- total
-}
-
-func registerColoredOrbit(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) (sum int64) {
-	// Get color from gradient based on iteration count of the orbit.
-	for i, p := range orbit.Points[:it] {
-		red, green, blue := frac.Method.Get(int64(i), it)
-		sum += registerPoint(p, orbit, frac, red, green, blue)
-	}
-	return sum
-}
-
-// registerOrbit register the points in an orbit in r, g, b channels depending
-// on it's iteration count.
-func registerOrbit(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) (sum int64) {
-	// Get color from gradient based on iteration count of the orbit.
-	red, green, blue := frac.Method.Get(it, frac.Iterations)
-	for _, p := range orbit.Points[:it] {
-		sum += registerPoint(p, orbit, frac, red, green, blue)
-	}
-	return sum
-}
-
-func registerField(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) (sum int64) {
-	var i int64
-	// Index of previous point.
-	for i = 0; i < it-1; i++ {
-		// Index of posterior point.
-		j := i + 1
-
-		u, v := orbit.Points[i], orbit.Points[j]
-		ru, rv, iu, iv := real(u), real(v), imag(u), imag(v)
-
-		// From the dot product we can calculate the cosAlpha between the two points.
-		cosAlpha := (ru*rv + iu*iv) / (math.Sqrt(ru*ru+iu*iu) * math.Sqrt(rv*rv+iv*iv))
-		// Which we then normalize to [0, 1].
-		angle := (1 + cosAlpha) / 2
-
-		red, green, blue := frac.Method.Grad.Lookup(angle).RGB()
-		sum += registerPoint(u, orbit, frac, red, green, blue)
-	}
-	return sum
-}
-
 func registerPoint(z complex128, orbit *fractal.Orbit, frac *fractal.Fractal, red, green, blue float64) int64 {
-	if pt, ok := point(z, orbit.C, frac); ok {
-		increase(pt, red, green, blue, frac)
-		return 1
-	}
-	return 0
-}
-
-func point(z, c complex128, frac *fractal.Fractal) (image.Point, bool) {
-	// Convert the 4-d point to a pixel coordinate.
-	p := ptoc(z, c, frac)
-
-	// Ignore points outside image.
-	if p.X >= frac.Width || p.Y >= frac.Height || p.X < 0 || p.Y < 0 {
-		return p, false
-	}
-	return p, true
-}
-
-// var rotX *mat64.Dense
-// var rotSomething *mat64.Dense
-
-// ptoc converts a point from the complex function to a pixel coordinate.
-//
-// Stands for point to coordinate, which is actually a really shitty name
-// because of it's ambiguous character haha.
-func ptoc(z, c complex128, frac *fractal.Fractal) (p image.Point) {
-	// r, i := real(z), imag(z)
-
-	// var rotVec mat64.Vector
-	// x := mat64.NewVector(4, []float64{real(z), imag(z), real(c), imag(c)})
-	// rotVec = *x
-	// rotVec.MulVec(rotX, x)
-	// rotVec.MulVec(rotSomething, &rotVec)
-
-	// tmp := frac.Plane(complex(rotVec.At(0, 0), rotVec.At(1, 0)),
-	// complex(rotVec.At(2, 0), rotVec.At(3, 0)))
-	tmp := frac.Plane(z, c)
-	r, i := real(tmp), imag(tmp)
-
-	p.X = frac.X(r)
-	p.Y = frac.Y(i)
-
-	return p
-}
-
 	if pt, ok := frac.Point(z, orbit.C); ok {
 		increase(pt, red, green, blue, frac)
 		return 1
@@ -333,61 +213,24 @@ func increase(pt image.Point, red, green, blue float64, frac *fractal.Fractal) {
 	}
 }
 
-func factorial(n int) int {
-	if n <= 1 {
-		return 1
-	}
-	return n * factorial(n-1)
-}
-
-func chose(n, i int) int {
-	return int(factorial(n) / (factorial(i) * factorial(n-i)))
-}
-
-func bernstein(i, n int, t float64) float64 {
-	return float64(chose(n, i)) * math.Pow(t, float64(i)) * math.Pow(1-t, float64(n-i))
-}
-
-func bezier(points []image.Point, n int, t float64) image.Point {
-	x := 0.0
-	y := 0.0
-	for i := 0; i <= n; i++ {
-		b := bernstein(i, n, t)
-		x += b * float64(points[i].X)
-		y += b * float64(points[i].Y)
-	}
-	return image.Pt(int(x), int(y))
-}
-
-func registerBezier(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) (sum int64) {
-	bezierLevel := 2
+func registerColoredOrbit(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) (sum int64) {
 	// Get color from gradient based on iteration count of the orbit.
-	red, green, blue := frac.Method.Get(it, frac.Iterations)
-
-outer:
-	for i := 0; i < int(it)-bezierLevel; i++ {
-		points := make([]image.Point, 0, bezierLevel)
-		for j := 0; j <= bezierLevel; j++ {
-			a, ok := point(orbit.Points[i+j], orbit.C, frac)
-			if !ok {
-				continue outer
-			}
-			points = append(points, a)
-		}
-		for p := 0; p <= int(frac.PathPoints); p++ {
-			t := float64(p) / float64(frac.PathPoints)
-			pt := bezier(points, bezierLevel, t)
-			increase(pt, red, green, blue, frac)
-			sum++
-		}
+	for i, p := range orbit.Points[:it] {
+		red, green, blue := frac.Method.Get(int64(i), frac.Iterations)
+		sum += registerPoint(p, orbit, frac, red, green, blue)
 	}
 	return sum
 }
-func registerPaths(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) int64 {
-	if frac.BezierLevel == 1 {
-		return registerLinear(it, orbit, frac)
+
+// registerOrbit register the points in an orbit in r, g, b channels depending
+// on it's iteration count.
+func registerOrbit(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) (sum int64) {
+	// Get color from gradient based on iteration count of the orbit.
+	red, green, blue := frac.Method.Get(it, frac.Iterations)
+	for _, p := range orbit.Points[:it] {
+		sum += registerPoint(p, orbit, frac, red, green, blue)
 	}
-	return registerBezier(it, orbit, frac)
+	return sum
 }
 
 // registerImage colors the point inside an orbit from a reference image.
@@ -403,48 +246,12 @@ func registerImage(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) (sum i
 	return sum
 }
 
-func Bresenham(start, end image.Point, points []image.Point) []image.Point {
-	var cx int = start.X
-	var cy int = start.Y
-
-	var dx int = end.X - cx
-	var dy int = end.Y - cy
-	if dx < 0 {
-		dx = 0 - dx
+// importance registers the importance of point (z, c) based on its length in a
+// histogram.
+func importance(z, c complex128, frac *fractal.Fractal, length int64) {
+	imp := fractal.Importance(frac)
+	if p, ok := imp.Point(z, c); ok {
+		inc := float64(length) / float64(frac.Iterations)
+		frac.Importance[p.X][p.Y] += inc
 	}
-	if dy < 0 {
-		dy = 0 - dy
-	}
-
-	var sx int
-	var sy int
-	if cx < end.X {
-		sx = 1
-	} else {
-		sx = -1
-	}
-	if cy < end.Y {
-		sy = 1
-	} else {
-		sy = -1
-	}
-	var err int = dx - dy
-
-	var n int
-	for n = 0; n < cap(points); n++ {
-		points = append(points, image.Point{cx, cy})
-		if cx == end.X && cy == end.Y {
-			return points
-		}
-		var e2 int = 2 * err
-		if e2 > (0 - dy) {
-			err = err - dy
-			cx = cx + sx
-		}
-		if e2 < dx {
-			err = err + dx
-			cy = cy + sy
-		}
-	}
-	return points
 }

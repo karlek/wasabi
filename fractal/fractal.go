@@ -44,6 +44,8 @@ type Fractal struct {
 	BezierLevel int         // Bezier interpolation level: 1 is linear, 2 is quadratic etc.
 	reference   image.Image // Reference image to sample pixel colors from.
 
+	Z, C func(*rand7i.ComplexRNG) complex128
+
 	// Calculation specific.
 	ratio float64
 	xZoom float64
@@ -71,6 +73,7 @@ func New(width, height int,
 	tries float64,
 	register func(complex128, complex128, *Orbit, *Fractal) int64,
 	theta float64,
+	z, c func(*rand7i.ComplexRNG) complex128,
 	threshold int64) *Fractal {
 	r, g, b := histo.New(width, height), histo.New(width, height), histo.New(width, height)
 	importance := histo.New(width, height)
@@ -84,6 +87,8 @@ func New(width, height int,
 		xZoom: zoom * float64(width/4) * (1 / ratio),
 		yZoom: zoom * float64(height/4),
 
+		Z: z,
+		C: c,
 
 		Importance:     importance,
 		PlotImportance: plotImportance,
@@ -149,13 +154,72 @@ func (frac *Fractal) Reference() image.Image {
 	return frac.reference
 }
 
+// X translates the real value of the complex point to an X-coordinate in the
+// image plane.
+func (frac Fractal) X(r float64) int {
+	return int(frac.xZoom*(r+real(frac.Offset)) + float64(frac.Width)/2.0)
 }
 
-func (f *Fractal) X(r float64) int {
-	return int(f.xZoom*(r+real(f.Offset)) + float64(f.Width)/2.0)
-
+// Y translates the imaginary value of the complex point to an Y-coordinate in
+// the image plane.
+func (frac Fractal) Y(i float64) int {
+	return int(frac.yZoom*(i+imag(frac.Offset)) + float64(frac.Height)/2.0)
 }
 
-func (f *Fractal) Y(i float64) int {
-	return int(f.yZoom*(i+imag(f.Offset)) + float64(f.Height)/2.0)
+// RandomPoint initializes each iteration with a random point.
+func RandomPoint(rng *rand7i.ComplexRNG) complex128 {
+	return rng.Complex128Go()
+}
+
+func Importance(frac *Fractal) *Fractal {
+	f := Fractal{
+		Width:  frac.Width,
+		Height: frac.Height,
+		Offset: complex(0, 0),
+		Plane:  Crci,
+		ratio:  frac.ratio,
+		xZoom:  1 * float64(frac.Width/4) * (1 / frac.ratio),
+		yZoom:  1 * float64(frac.Height/4),
+	}
+	return &f
+}
+
+func (frac *Fractal) Point(z, c complex128) (image.Point, bool) {
+	// Convert the 4-d point to a pixel coordinate.
+	p := frac.ComplexToImage(z, c)
+
+	// Ignore points outside image.
+	if p.X >= frac.Width || p.Y >= frac.Height || p.X < 0 || p.Y < 0 {
+		return p, false
+	}
+	return p, true
+}
+
+// ptoc converts a point from the complex function to a pixel coordinate.
+//
+// Stands for point to coordinate, which is actually a really shitty name
+// because of it's ambiguous character haha.
+func (frac *Fractal) ComplexToImage(z, c complex128) (p image.Point) {
+	// r, i := real(z), imag(z)
+
+	// var rotVec mat64.Vector
+	// x := mat64.NewVector(4, []float64{real(z), imag(z), real(c), imag(c)})
+	// rotVec = *x
+	// rotVec.MulVec(rotX, x)
+	// rotVec.MulVec(rotSomething, &rotVec)
+
+	// tmp := frac.Plane(complex(rotVec.At(0, 0), rotVec.At(1, 0)),
+	// complex(rotVec.At(2, 0), rotVec.At(3, 0)))
+	tmp := frac.Plane(z, c)
+
+	p.X = frac.X(real(tmp))
+	p.Y = frac.Y(imag(tmp))
+
+	return p
+}
+
+func (frac *Fractal) ImageToComplex(x, y int) complex128 {
+	r := 2 / frac.Zoom * (2*(float64(x)/float64(frac.Width)+real(frac.Offset)) - 1)
+	i := 2 / frac.Zoom * (2*(float64(y)/float64(frac.Height)+imag(frac.Offset)) - 1)
+	return complex(r, i)
 }
