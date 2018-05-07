@@ -145,11 +145,10 @@ func (frac *Fractal) SetReference(i image.Image) {
 	frac.reference = i
 }
 
-// ReferenceColor returns the color at the point in the reference image.
-func (frac Fractal) ReferenceColor(pt image.Point) (red, green, blue float64) {
-	r, g, b, _ := frac.reference.At(pt.Y%frac.reference.Bounds().Max.X, pt.X%frac.reference.Bounds().Max.Y).RGBA()
-	red, green, blue = float64(r>>8)/256, float64(g>>8)/256, float64(b>>8)/256
-	return red, green, blue
+func (frac *Fractal) Reference() image.Image {
+	return frac.reference
+}
+
 }
 
 func (f *Fractal) X(r float64) int {

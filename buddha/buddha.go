@@ -314,17 +314,7 @@ func ptoc(z, c complex128, frac *fractal.Fractal) (p image.Point) {
 	return p
 }
 
-func registerImage(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) (sum int64) {
-	// Get color from gradient based on iteration count of the orbit.
-	for _, p := range orbit.Points[:it] {
-		sum += registerPointReferene(p, orbit, frac)
-	}
-	return sum
-}
-
-func registerPointReferene(z complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int64 {
-	if pt, ok := point(z, orbit.C, frac); ok {
-		red, green, blue := frac.ReferenceColor(pt)
+	if pt, ok := frac.Point(z, orbit.C); ok {
 		increase(pt, red, green, blue, frac)
 		return 1
 	}
@@ -400,25 +390,17 @@ func registerPaths(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) int64 
 	return registerBezier(it, orbit, frac)
 }
 
-func registerLinear(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) int64 {
+// registerImage colors the point inside an orbit from a reference image.
+func registerImage(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) (sum int64) {
 	// Get color from gradient based on iteration count of the orbit.
-	red, green, blue := frac.Method.Get(it, frac.Iterations)
-	bresPoints := make([]image.Point, 0, frac.PathPoints)
-	for i := 0; i < int(it)-1; i++ {
-		// Convert the complex point to a pixel coordinate.
-		a, ok := point(orbit.Points[i], orbit.C, frac)
-		if !ok {
-			continue
-		}
-		b, ok := point(orbit.Points[i+1], orbit.C, frac)
-		if !ok {
-			continue
-		}
-		for _, pt := range Bresenham(a, b, bresPoints) {
+	for _, p := range orbit.Points[:it] {
+		if pt, ok := frac.Point(p, orbit.C); ok {
+			red, green, blue := iro.ReferenceColor(frac.Reference(), pt)
 			increase(pt, red, green, blue, frac)
+			sum++
 		}
 	}
-	return 0
+	return sum
 }
 
 func Bresenham(start, end image.Point, points []image.Point) []image.Point {
