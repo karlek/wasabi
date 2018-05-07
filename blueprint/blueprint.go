@@ -105,7 +105,7 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 	method := coloring.NewColoring(b.BaseColor, parseModeFlag(b.Coloring), colors, b.Range)
 
 	// Fill our histogram bins of the orbits.
-	return fractal.New(
+	frac := fractal.New(
 		b.Width,
 		b.Height,
 		int64(b.Iterations),
@@ -124,6 +124,9 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 		registerMode,
 		b.Theta,
 		int64(b.Threshold))
+
+	frac.Func = mandel.Mandelbrot
+	return frac
 }
 
 // parseRegisterMode parses the _registerer_ string to a fractal orbit registrer.

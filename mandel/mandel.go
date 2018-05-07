@@ -145,3 +145,61 @@ func Primitive(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) (i 
 	// Since it's the primitive brot we register the orbit.
 	return i
 }
+
+// EscapedLast gives us the first point outside the mandelbrot and the number
+// of iterations it took until divergence. These values are used for color
+// coding the quintessential mandelbrot render.
+func EscapedLast(z, c complex128, frac *fractal.Fractal) (complex128, int64) {
+	// We ignore all values that we know are in the bulb, and will therefore
+	// converge.
+	if IsInBulb(c) && equal(frac.Func, Mandelbrot) {
+		return z, -1
+	}
+
+	// Saved value for cycle-detection.
+	var bfract complex128
+
+	// See if the complex function diverges before we reach our iteration count.
+	var i int64
+	for i = 0; i < frac.Iterations; i++ {
+		z = frac.Func(z, c, frac.Coef)
+		if IsCycle(z, &bfract, i) {
+			return z, -1
+		}
+
+		// This point diverges, so we all the preceeding points are interesting
+		// and will be registered.
+		if IsOutside(z, frac.Bailout) {
+			return z, i
+		}
+	}
+
+	// This point converges; assumed under the number of iterations.
+	return z, -1
+}
+
+func Mandelbrot(z, c, _ complex128) complex128 {
+	return z*z + c
+}
+
+func BurningShip(z, c, _ complex128) complex128 {
+	r := math.Abs(real(z))
+	i := math.Abs(imag(z))
+	return complex(r, i)*complex(r, i) + c
+}
+
+func Monk(z, c, _ complex128) complex128 {
+	return cmplx.Cot(c)*cmplx.Atanh(z) + c
+}
+
+func Wrench(z, c, _ complex128) complex128 {
+	rz, iz := real(z), imag(z)
+	rc, ic := real(c), imag(c)
+	return complex(math.Abs(iz*ic*rz), math.Abs(iz*rz*rc)) + c
+}
+
+func equal(a, b func(complex128, complex128, complex128) complex128) bool {
+	f1 := reflect.ValueOf(a).Pointer()
+	f2 := reflect.ValueOf(b).Pointer()
+	return f1 == f2
+}
