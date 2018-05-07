@@ -1,6 +1,10 @@
 package mandel
 
 import (
+	"math"
+	"math/cmplx"
+	"reflect"
+
 	"github.com/karlek/wasabi/fractal"
 )
 
@@ -78,7 +82,7 @@ func Escaped(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int64
 			return -1
 		}
 
-		// This point diverges, so we all the preceeding points are interesting
+		// This point diverges, which means all the preceeding points are interesting
 		// and will be registered.
 		if IsOutside(z, frac.Bailout) {
 			return i
@@ -116,8 +120,7 @@ func Converged(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int
 	}
 	// This point converges; assumed under the number of iterations. Since it's
 	// the anti-buddhabrot we register the orbit.
-	// registerOrbit(points, width, height, num, iterations, r, g, b)
-	return -1
+	return i
 }
 
 // Primitive returns all points in the domain of the complex function
