@@ -1,5 +1,7 @@
 # Wasabi
 
+[![Maintainability](https://api.codeclimate.com/v1/badges/159615e96c52b724a4ae/maintainability)](https://codeclimate.com/github/karlek/wasabi/maintainability)
+
 Wasabi is a renderer of buddhabrot and its family members. It used to share its name with a Japanese aesthetic called [Wabi-sabi](https://en.wikipedia.org/wiki/Wabi-sabi). Referencing the impossibility of creating the real buddhabrot and learning to accept the beauty in reality and its flaws. However, the affectionate nickname wasabi soon replaced it.
 
 ## Showcase
