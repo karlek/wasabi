@@ -1,0 +1,60 @@
+{
+    "plane": "zrzi",
+    "bailout": 4,
+    "cacheHistograms": true,
+    "multipleExposures": false,
+    "png": false,
+    "jpg": true,
+    "outputFilename": "a",
+
+    "imagCoefficient": 0,
+    "realCoefficient": 1.05,
+
+    "Imag": -0.55,
+    "Real": 0.8,
+    "Zoom": 0.9,
+    "Seed": 1,
+
+    "registerMode": "escapes",
+
+    "baseColor": {
+        "R": 0,
+        "G": 0,
+        "B": 0,
+        "A": 1
+    },
+
+    "Threshold": 40,
+    "iterations": 7.5e6,
+    "tries": 111.11,
+    "coloring": "iteration",
+    "width": 2926,
+    "height": 4096,
+
+    "exposure": 1.5,
+    "factor": 0.005,
+    "function": "exp",
+
+    "gradient": [
+        {
+            "R": 1.0,
+            "G": 0.39,
+            "B": 0.17
+        },
+        {
+            "R": 0.0,
+            "G": 0.18,
+            "B": 1.00
+        },
+        {
+            "R": 1,
+            "G": 0.89,
+            "B": 0.5
+        }
+    ],
+    "range": [
+        0.0,
+        0.0001,
+        1.0
+    ]
+}
