@@ -170,6 +170,9 @@ outer:
 	return orbits
 }
 
+// registerPoint converts the complex point into an image coordinate and
+// increases it's histogram values. Points outside the image canvas are
+// ignored.
 func registerPoint(z complex128, orbit *fractal.Orbit, frac *fractal.Fractal, red, green, blue float64) int64 {
 	if pt, ok := frac.Point(z, orbit.C); ok {
 		increase(pt, red, green, blue, frac)
@@ -178,6 +181,8 @@ func registerPoint(z complex128, orbit *fractal.Orbit, frac *fractal.Fractal, re
 	return 0
 }
 
+// increase adds the color values for the point pt to their respective
+// histograms.
 func increase(pt image.Point, red, green, blue float64, frac *fractal.Fractal) {
 	if red != 0 {
 		frac.R[pt.X][pt.Y] += red
@@ -190,6 +195,9 @@ func increase(pt image.Point, red, green, blue float64, frac *fractal.Fractal) {
 	}
 }
 
+// registerColoredOrbit colors the first point in the low part of the gradient
+// and the last point in the high part. The rest of the points are interpolated
+// from the gradient.
 func registerColoredOrbit(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) (sum int64) {
 	// Get color from gradient based on iteration count of the orbit.
 	for i, p := range orbit.Points[:it] {
