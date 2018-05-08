@@ -44,7 +44,7 @@ type Fractal struct {
 	BezierLevel int         // Bezier interpolation level: 1 is linear, 2 is quadratic etc.
 	reference   image.Image // Reference image to sample pixel colors from.
 
-	Z, C func(*rand7i.ComplexRNG) complex128
+	Z, C func(complex128, *rand7i.ComplexRNG) complex128
 
 	// Calculation specific.
 	ratio float64
@@ -73,7 +73,7 @@ func New(width, height int,
 	tries float64,
 	register func(complex128, complex128, *Orbit, *Fractal) int64,
 	theta float64,
-	z, c func(*rand7i.ComplexRNG) complex128,
+	z, c func(complex128, *rand7i.ComplexRNG) complex128,
 	threshold int64) *Fractal {
 	r, g, b := histo.New(width, height), histo.New(width, height), histo.New(width, height)
 	importance := histo.New(width, height)
@@ -167,7 +167,7 @@ func (frac Fractal) Y(i float64) int {
 }
 
 // RandomPoint initializes each iteration with a random point.
-func RandomPoint(rng *rand7i.ComplexRNG) complex128 {
+func RandomPoint(_ complex128, rng *rand7i.ComplexRNG) complex128 {
 	return rng.Complex128Go()
 }
 

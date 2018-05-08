@@ -233,12 +233,34 @@ func parseModeFlag(mode string) coloring.Mode {
 }
 
 // parseZandC choses the sampling methods for our original points.
-func parseZandC(mode string) func(*rand7i.ComplexRNG) complex128 {
+func parseZandC(mode string) func(complex128, *rand7i.ComplexRNG) complex128 {
 	switch strings.ToLower(mode) {
 	case "random":
 		return fractal.RandomPoint
 	case "origo":
-		return func(_ *rand7i.ComplexRNG) complex128 { return complex(0, 0) }
+		return func(_ complex128, _ *rand7i.ComplexRNG) complex128 { return complex(0, 0) }
+	case "a1":
+		return func(c complex128, _ *rand7i.ComplexRNG) complex128 { return complex(real(c), -imag(c)) }
+	case "a2":
+		return func(c complex128, _ *rand7i.ComplexRNG) complex128 {
+			return complex(math.Sin(real(c)), math.Sin(imag(c)))
+		}
+	case "a3":
+		return func(c complex128, _ *rand7i.ComplexRNG) complex128 {
+			return complex(math.Abs(real(c)), math.Abs(imag(c)))
+		}
+	case "a4":
+		return func(c complex128, _ *rand7i.ComplexRNG) complex128 {
+			return complex(real(c)/imag(c), real(c))
+		}
+	case "a5":
+		return func(c complex128, _ *rand7i.ComplexRNG) complex128 {
+			return complex(real(c)*imag(c), -imag(c))
+		}
+	case "a6":
+		return func(c complex128, _ *rand7i.ComplexRNG) complex128 {
+			return complex(-imag(c), -real(c))
+		}
 	default:
 		logrus.Fatalln("invalid z or c strategy:", mode)
 	}

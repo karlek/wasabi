@@ -92,8 +92,8 @@ func arbitrary(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG
 	var total, i int64
 	for i = 0; i < share; i++ {
 		// Our random points which, hopefully, will create an orbit!
-		z = frac.Z(rng)
-		c = frac.C(rng)
+		c = frac.C(c, rng)
+		z = frac.Z(c, rng)
 		orbit.C = c
 
 		length := Attempt(z, c, orbit, frac)
