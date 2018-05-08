@@ -59,9 +59,9 @@ func plotCol(wg *sync.WaitGroup, x int, col []float64, ren *render.Render, frac 
 		}
 
 		c := color.RGBA{
-			uint8(value(ren.F, frac.R[x][y], rMax, ren.Factor, ren.Exposure)),
-			uint8(value(ren.F, frac.G[x][y], gMax, ren.Factor, ren.Exposure)),
-			uint8(value(ren.F, frac.B[x][y], bMax, ren.Factor, ren.Exposure)),
+			uint8(255 * value(ren.F, frac.R[x][y], rMax, ren.Factor, ren.Exposure)),
+			uint8(255 * value(ren.F, frac.G[x][y], gMax, ren.Factor, ren.Exposure)),
+			uint8(255 * value(ren.F, frac.B[x][y], bMax, ren.Factor, ren.Exposure)),
 			255}
 		// We flip x <=> y to rotate the image to an upright position.
 		ren.Image.SetRGBA(y, x, c)
@@ -91,12 +91,12 @@ func Lin(x, factor float64) float64 {
 
 // value calculates the color value of the pixel.
 func value(f func(float64, float64) float64, v, max, factor, exposure float64) float64 {
-	return math.Min(f(v, factor)*scale(f, max, factor, exposure), 255)
+	return math.Min(f(v, factor)*scale(f, max, factor, exposure), 1)
 }
 
 // scale equalizes the histogram distribution for each value.
 func scale(f func(float64, float64) float64, max, factor, exposure float64) float64 {
-	return (255 * exposure) / f(max, factor)
+	return (exposure) / f(max, factor)
 }
 
 func Value(f func(float64, float64) float64, v, max, factor, exposure float64) float64 {
