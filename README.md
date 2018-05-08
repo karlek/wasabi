@@ -19,18 +19,18 @@ Wasabi is a renderer of buddhabrot and its family members. It used to share its 
 	<img src="https://github.com/karlek/wasabi/blob/master/img/bezier.jpg?raw=true" width="45.0%">
 </p>
 
-> It's also possible to plot the other capital planes of the complex space, or
-> to tweak the complex function.
+> It's also possible to plot the other capital planes of the complex space. I
+> created a new method to visualize angles between points inside orbits
 
 <p align="center">
 	<img src="https://github.com/karlek/wasabi/blob/master/img/1-zrcr.jpg?raw=true" width="45.0%">
-	<img src="https://github.com/karlek/wasabi/blob/master/img/inwards/inwards.jpg?raw=true" width="45.0%">
+	<img src="https://github.com/karlek/wasabi/blob/master/img/2-angles.jpg?raw=true" width="45.0%">
 </p>
 
-> I created of a new method to visualize angles between points inside orbits.
+> There are multiple ways to tweak the complex functions.
 
-<p align="center"><img src="https://github.com/karlek/wasabi/blob/master/img/2-angles.jpg?raw=true" width="45.0%"></p>
-
+<p align="center"><img src="https://github.com/karlek/wasabi/blob/master/img/inwards/inwards.jpg?raw=true" width="45.0%"></p>
+	
 > The project has rendered a few visually interesting bugs.
 
 <p align="center">
