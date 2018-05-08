@@ -36,7 +36,7 @@ Wasabi is a renderer of buddhabrot and its family members. It used to share its 
 
 > One of the more famous of my renders ;)
 
-<center><img src=https://github.com/karlek/wasabi/blob/master/img/magma.jpg?raw=true width=49.9%></center>
+<center><img src=https://github.com/karlek/wasabi/blob/master/img/magma.png?raw=true width=49.9%></center>
 
 ## Features
 
