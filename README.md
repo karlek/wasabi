@@ -6,37 +6,37 @@ Wasabi is a renderer of buddhabrot and its family members. It used to share its 
 
 > To the left, an original buddhabrot and to the right an anti-buddhabrot.
 
-<img src=https://github.com/karlek/wasabi/blob/master/img/original.jpg?raw=true width=49.9%>
-<img src=https://github.com/karlek/wasabi/blob/master/img/anti.jpg?raw=true width=49.9%>
+<img src="https://github.com/karlek/wasabi/blob/master/img/original.jpg?raw=true" width="49.9%">
+<img src="https://github.com/karlek/wasabi/blob/master/img/anti.jpg?raw=true" width="49.9%">
 
 > To the left an image of the linear calculation path rendering technique, and
 > to the right a second degree bezier interpolation.
 
-<img src=https://github.com/karlek/wasabi/blob/master/img/calc.jpg?raw=true width=49.9%>
-<img src=https://github.com/karlek/wasabi/blob/master/img/bezier.jpg?raw=true width=49.9%>
+<img src="https://github.com/karlek/wasabi/blob/master/img/calc.jpg?raw=true" width="49.9%">
+<img src="https://github.com/karlek/wasabi/blob/master/img/bezier.jpg?raw=true" width="49.9%">
 
 > It's also possible to plot the other capital planes of the complex space, or
 > to tweak the complex function.
 
-<img src=https://github.com/karlek/wasabi/blob/master/img/1-zrcr.jpg?raw=true width=49.9%>
-<img src=https://github.com/karlek/wasabi/blob/master/img/inwards/inwards.jpg?raw=true width=49.9%>
+<img src="https://github.com/karlek/wasabi/blob/master/img/1-zrcr.jpg?raw=true" width="49.9%">
+<img src="https://github.com/karlek/wasabi/blob/master/img/inwards/inwards.jpg?raw=true" width="49.9%">
 
 > I created of a new method to visualize angles between points inside orbits.
 
-<center><img src=https://github.com/karlek/wasabi/blob/master/img/2-angles.jpg?raw=true width=49.9%></center>
+<center><img src="https://github.com/karlek/wasabi/blob/master/img/2-angles.jpg?raw=true" width="49.9%"></center>
 
 > The project has rendered a few visually interesting bugs.
 
-<img src=https://github.com/karlek/wasabi/blob/master/img/bug.jpg?raw=true width=49.9%>
-<img src=https://github.com/karlek/wasabi/blob/master/img/race-condition.jpg?raw=true width=49.9%>
+<img src="https://github.com/karlek/wasabi/blob/master/img/bug.jpg?raw=true" width="49.9%">
+<img src="https://github.com/karlek/wasabi/blob/master/img/race-condition.jpg?raw=true" width="49.9%">
 
 > To the left an point orbit trap around origo, and to the right off-center.
-<img src=https://github.com/karlek/wasabi/blob/master/img/orbit-trap.jpg?raw=true width=49.9%>
-<img src=https://github.com/karlek/wasabi/blob/master/img/point-trap.jpg?raw=true width=49.9%>
+<img src="https://github.com/karlek/wasabi/blob/master/img/orbit-trap.jpg?raw=true" width="49.9%">
+<img src="https://github.com/karlek/wasabi/blob/master/img/point-trap.jpg?raw=true" width="49.9%">
 
 > One of the more famous of my renders ;)
 
-<center><img src=https://github.com/karlek/wasabi/blob/master/img/magma.png?raw=true width=49.9%></center>
+<center><img src="https://github.com/karlek/wasabi/blob/master/img/magma.png?raw=true" width="49.9%"></center>
 
 ## Features
 
