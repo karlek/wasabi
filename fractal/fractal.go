@@ -195,6 +195,31 @@ func (frac *Fractal) Point(z, c complex128) (image.Point, bool) {
 	return p, true
 }
 
+func initializeRot() {
+	// var rotX *mat64.Dense
+	// var rotSomething *mat64.Dense
+
+	// rotX = mat64.NewDense(4, 4, []float64{
+	// 	math.Cos(frac.Theta2), math.Sin(frac.Theta2), 0, 0,
+	// 	-math.Sin(frac.Theta2), math.Cos(frac.Theta2), 0, 0,
+	// 	0, 0, 1, 0,
+	// 	0, 0, 0, 1,
+	// })
+
+	// rotSomething = mat64.NewDense(4, 4, []float64{
+	// 	1, 0, 0, 0,
+	// 	0, 1, 0, 0,
+	// 	0, 0, math.Cos(frac.Theta), -math.Sin(frac.Theta),
+	// 	0, 0, math.Sin(frac.Theta), math.Cos(frac.Theta),
+	// })
+	// rotSomething = mat64.NewDense(4, 4, []float64{
+	// 	math.Cos(frac.Theta), 0, -math.Sin(frac.Theta), 0,
+	// 	0, 1, 0, 0,
+	// 	math.Sin(frac.Theta), 0, math.Cos(frac.Theta), 0,
+	// 	0, 0, 0, 1,
+	// })
+}
+
 // ptoc converts a point from the complex function to a pixel coordinate.
 //
 // Stands for point to coordinate, which is actually a really shitty name
