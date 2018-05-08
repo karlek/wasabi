@@ -76,7 +76,7 @@ func arbitrary(totChan chan int64, frac *fractal.Fractal, rng *rand7i.ComplexRNG
 		length := Attempt(z, c, orbit, frac)
 		total += length
 		if IsLongOrbit(length, frac) {
-			i += searchNearby(z, c, orbit, frac, &total, bar)
+			i += searchNearby(z, orbit, frac, &total, bar)
 		}
 
 		// Plot sampling map.
@@ -132,13 +132,13 @@ func IsLongOrbit(length int64, frac *fractal.Fractal) bool {
 
 // searchNearby samples points from nearby a point which rendered a long orbit
 // with increasingly smaller larger steps out from the point.
-func searchNearby(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal, total *int64, bar *barcli.Bar) (i int64) {
+func searchNearby(z complex128, orbit *fractal.Orbit, frac *fractal.Fractal, total *int64, bar *barcli.Bar) (i int64) {
 	h, tol := 1e-15, 1e-2
 	var orbits int64
 
 outer:
 	for ; h < tol; h *= 1e1 {
-		cr, ci := real(c), imag(c)
+		cr, ci := real(orbit.C), imag(orbit.C)
 
 		cs := []complex128{
 			complex(cr+h, ci),
@@ -158,7 +158,7 @@ outer:
 			(*total) += length
 
 			if frac.PlotImportance {
-				importance(z, c, frac, length)
+				importance(z, orbit.C, frac, length)
 			}
 
 			if !IsLongOrbit(length, frac) {
