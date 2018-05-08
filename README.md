@@ -1,166 +1,92 @@
-# Wabisabi
+# Wasabi
 
-Wabisabi is a renderer of buddhabrot and its family members. It shares its name with a Japanese asthethic called [Wabi-sabi](https://en.wikipedia.org/wiki/Wabi-sabi). Referencing the impossibility of creating the real buddhabrot and learning to accept the beauty in reality and its flaws. 
+Wasabi is a renderer of buddhabrot and its family members. It used to share its name with a Japanese asthethic called [Wabi-sabi](https://en.wikipedia.org/wiki/Wabi-sabi). Referencing the impossibility of creating the real buddhabrot and learning to accept the beauty in reality and its flaws. However, the affectionate nickname wasabi soon replaced it.
 
-_The name will probably be changed to it's lovely nickname wasabi anytime soon hahaha <3_
+## Showcase
 
-> To the left, an original buddhabrot and to the right an anti-abrot.
+> To the left, an original buddhabrot and to the right an anti-buddhabrot.
 
 <img src=https://github.com/karlek/wabisabi/blob/master/img/original.jpg?raw=true width=49.9%>
 <img src=https://github.com/karlek/wabisabi/blob/master/img/anti.jpg?raw=true width=49.9%>
 
-> An image of the calculation path rendering technique.
+> To the left an image of the linear calculation path rendering technique, and
+> to the right a second degree bezier interpolation.
 
 <img src=https://github.com/karlek/wabisabi/blob/master/img/calc.jpg?raw=true width=49.9%>
+<img src=https://github.com/karlek/wabisabi/blob/master/img/bezier.jpg?raw=true width=49.9%>
+
+> It's also possible to plot the other capital planes of the complex space.
+
+<center><img src=https://github.com/karlek/wabisabi/blob/master/img/1-zrcr.jpg?raw=true width=49.9%></center>
+
+> I created of a new method to visualize angles between points inside orbits.
+
+<center><img src=https://github.com/karlek/wabisabi/blob/master/img/2-angles.jpg?raw=true width=49.9%></center>
+
+> The project has rendered a few visually interesting bugs.
+
+<img src=https://github.com/karlek/wabisabi/blob/master/img/bug.jpg?raw=true width=49.9%>
+<img src=https://github.com/karlek/wabisabi/blob/master/img/race-condition.jpg?raw=true width=49.9%>
+
+> To the left an point orbit trap around origo, and to the right off-center.
+<img src=https://github.com/karlek/wabisabi/blob/master/img/orbit-trap.jpg?raw=true width=49.9%>
+<img src=https://github.com/karlek/wabisabi/blob/master/img/point-trap.jpg?raw=true width=49.9%>
+
+> One of the more famous of my renders ;)
+
+<center><img src=https://github.com/karlek/wabisabi/blob/master/img/magma.jpg?raw=true width=49.9%></center>
+
+## Features
+
+* Calculating the original, anti- and primitive- buddhabrot.
+* Exploring the different planes of Zr, Zi, Cr and Ci.
+* Modular design for easier exploration of the complex function space.
+* Histogram equalization functions to control image exposure.
+* Cache histograms for faster exposure tweaking.
+* Parallel computing for all heavy calculations.
+* Plot calculation-paths. Credits to Raka Jovanovic and Milan Tuba (ISSN: 1109-2750).
+* Plot orbit angle distribution.
+* Hand optimized assembly(!) for generating random complex points. Thank you [7i](https://github.com/7i)!
+
+>It should be noted that speed in random number generating algorithms competes
+>with the necessity of having a random distribution. If you know of a way to
+>benchmark randomness as well as speed, please create an issue!
+
+![Benchmark](https://github.com/karlek/wabisabi/blob/master/img/benchmark.png?raw=true)
 
 ## Install
 
 ```fish
-$ go get github.com/karlek/wabisabi
+$ go get github.com/karlek/wasabi
 ```
 
 ## Run
 
 ```fish
-# Be sure to limit the memory usage beforehand; wabisabi is greedy little devil.
+# Be sure to limit the memory usage beforehand; wasabi is greedy little devil.
 $ ulimit -Sv 4000000 # Where the number is the memory in kB.
-$ wabisabi
+$ wasabi blueprint.json
 ```
 
-## Features
+## Tips
 
-* Saving and loading of histograms to re-render with different exposures.
-* Calculating the original, anti- and primitive- buddhabrot.
-* Exploring the different planes of Zr, Zi, Cr and Ci.
-* Different histogram equalization functions (think color scaling).
-* Using the color palette of an image to color the brot.
-* Change the co-efficient of the complex function i.e __a__\*z\*z+__a__\*c
-* Zooming.
-* Multiple CPU support. 
-* Hand optimized assembly(!) for generating random complex points. Thank you [7i](https://github.com/7i)!
-* Plot Calculation-Paths. Credits to Raka Jovanovic and Milan Tuba (ISSN: 1109-2750).
-
->It should be noted that speed in random number generating algorithms competes with the necessity of having a random distribution. If you know of a way to benchmark randomness as well as speed, please create an issue!
-
-![Benchmark](https://github.com/karlek/wabisabi/blob/master/img/benchmark.png?raw=true)
-
-## Future features
-
-* Metropolis-hastings algorithm for faster zooming.
-* Orbit trapping; would be amazing!
-
-## Random area / notes to myself
-
-### Complex functions
-
-Many complex functions which can be iterated create interesting orbits. 
-
-```go
-z = |z*z| + c
-complex(real(c), -imag(c))
-complex(-math.Abs(real(c)), imag(c))
-complex(math.Abs(real(c)), imag(c))
-complex(imag(c)-real(c), real(c)*imag(c))
-```
-
-### Z<sub>0</sub>
-
-```go
-z := randomPoint(random)
-z := complex(math.Sin(real(c)), math.Sin(imag(c)))
-```
-// return complex(real(c), -imag(c))
-// return complex(math.Abs(real(c)), math.Abs(imag(c)))
-// return complex(real(c)/imag(c), real(c))
-// return complex(real(c)*imag(c), -imag(c))
-// return complex(-imag(c), -real(c))
-// return complex(imag(c), real(c))
-// return complex(imag(c), real(c))
-// return complex(imag(c), imag(c))
-// return complex(real(c), real(c))
-// return complex(math.Abs(real(c)), math.Abs(imag(c)))
-
-### Future
-
-
-* Xor thing
-* Function for iteration
-* Punkterna orbitlängderna blir utfallsrum som vi samplar med permutation.
-
-
-* Only allow a certain type of orbits. 
-    - How to discern between different types?
-        + Constant increment on certain axis indicates spirals?
-        + Convex hull to check roundness?
-        + Is iteration length related to orbit types?
-
-* Super sampling
-    - Not sure how this differs from rendering a larger buddhabrot and just downsizing it?
-        + Probably is just skipping the render and resizing step and calculating the values in the histograms directly.
-
-* Since the orbits reminds me of a circle; it could be possible to unravel the circle and convert them into sine-waves to create tones :D
-    - Outer convex hull to get the radius and by extension the amplitude. 
-
-* More than 3 histograms?
-    - Doesn't this only make sense with color spaces with more than 3 values such as CMYK?
-
-### Co-efficient
-
-The coefficient on the __real__ axis has two properties:
-
-* Why does the coefficient seem to be capped at 1.37~? 
-* When larger than _1_ it twists into something looking like a set of armor.
-    - This then eventually twists into itself at around 1.37~ where it becomes only two specks of dust.
-    - It twists on two points towards the center.
-    - Try with values like: _1.01_.
-* When smaller than _1_ it works as a zoom. 
-    - On which axis? Both real and imaginary? Or only real? Not sure.
-* When smaller than _0_ (-1.1 to 0) it spirals in on itself.
-    - It rotates on one point towards itself.
-
-The coefficient on the __imaginary__ axis has two properties:
-
-* When slightly larger than _1_ it makes the buddhabrot more ... ephemeral? Try with values like: _1.001_.
-* When smaller than _1_
-* When smaller than _0_ the right side of the brot becomes corrupted. Really cool!
-    - Try with values like: _-0.01_ and _-0.1_.
-    - With values like _-.5_ it looks like a sinking ship.
-
-Combining _both_ coefficient:
-
-### Problems
-
-By allowing coefficient and exploring different planes a slow down of 30% is observed. Ugly solution is to create special function for each possibility.
-
-### Possible bug
+For doing animations I recommend writing a simple shell script. I use `jq` to
+iteratively update the blueprint and `fish` as my shell of preference. My
+scripts usually looks like this:
 
 ```fish
-# width = 3000, height = 4000
-go install; wabisabi -zoom 1 -seed 1 -tries 0.1
-go install; wabisabi -zoom 0.5 -seed 1 -tries 0.1
+# Animation of the real coefficient.
+for i in (seq -1 0.1 1)
+	jq ".realCoefficient = $i" < wimm.json > /tmp/a.json
+	wasabi -out "$i" /tmp/a.json 
+end
 ```
 
-Also have switched the real and imaginary axis. The zoom value should be on the imaginary axis not the real axis.
+## Contributing
 
-Problem lies with img.Set(y, x) and that the histogram has the wrong size.
-With the current implementation. We can't allow aspect ratios other than 1:1.
-
-### Fun stuff
-
-Interesting old bug:
-
-```go
-p.X = int((zoom*float64(width)/2.8)*(r+real(offset))) + width/2
-p.Y = int((zoom*float64(height)/2.8)*(i+imag(offset))) + height/2
-```
-
-Fix
-```go
-p.X = int((zoom*float64(width)/2.8)*(r+real(offset)) + width/2)
-p.Y = int((zoom*float64(height)/2.8)*(i+imag(offset)) + height/2)
-```
-
-Created crosses by rounding coordinates numbers.
+The easiest way to contribute is to find a new interesting complex function or
+z/c-sampling strategy. Please make a pull request with a pretty image and the
+`blueprint.json`.
 
 Public domain
 -------------
