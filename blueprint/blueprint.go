@@ -4,6 +4,7 @@ package blueprint
 import (
 	"encoding/json"
 	"io/ioutil"
+	"math"
 	"strings"
 
 	rand7i "github.com/7i/rand"
@@ -54,6 +55,8 @@ type Blueprint struct {
 
 	RegisterMode string // How the fractal will capture orbits. The different modes are: anti, primitive and escapes.
 
+	ComplexFunction string // The complex function we shall explore.
+
 	Plane string // Chose which capital plane we will plot: Crci, Crzi, Zici, Zrci, Zrcr, Zrzi.
 
 	BaseColor iro.RGBA   // The background color.
@@ -99,10 +102,8 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 	// Our way of registering orbits. Either we register the orbits that either converges, diverges or both.
 	registerMode := parseRegistrer(b.RegisterMode)
 
-	// Our complex function to find orbits with.
-	function := func(z, c, coef complex128) complex128 {
-		return coef*complex(real(z), imag(z))*complex(real(z), imag(z)) + coef*complex(real(c), imag(c))
-	}
+	// Get the complex function to find orbits with.
+	f := parseComplexFunctionFlag(b.ComplexFunction)
 
 	z := parseZandC(b.ZUpdate)
 	c := parseZandC(b.CUpdate)
@@ -111,7 +112,7 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 	method := coloring.NewColoring(b.BaseColor, parseModeFlag(b.Coloring), colors, b.Range)
 
 	// Fill our histogram bins of the orbits.
-	frac := fractal.New(
+	return fractal.New(
 		b.Width,
 		b.Height,
 		int64(b.Iterations),
@@ -119,7 +120,7 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 		coefficient,
 		b.Bailout,
 		parsePlane(b.Plane),
-		function,
+		f,
 		b.Zoom,
 		offset,
 		b.PlotImportance,
@@ -131,9 +132,6 @@ func (b *Blueprint) Fractal() *fractal.Fractal {
 		b.Theta,
 		z, c,
 		int64(b.Threshold))
-
-	frac.Func = mandel.Mandelbrot
-	return frac
 }
 
 // parseRegisterMode parses the _registerer_ string to a fractal orbit registrer.
@@ -194,6 +192,23 @@ func parsePlane(plane string) func(complex128, complex128) complex128 {
 		logrus.Fatalln("invalid plane:", plane)
 	}
 	return fractal.Zrzi
+}
+
+// parseComplexFunctionFlag parses the _function_ string to a complex function.
+func parseComplexFunctionFlag(function string) func(complex128, complex128, complex128) complex128 {
+	switch strings.ToLower(function) {
+	case "mandelbrot":
+		return mandel.Mandelbrot
+	case "burningship":
+		return mandel.BurningShip
+	case "b1":
+		return mandel.B1
+	case "b2":
+		return mandel.B2
+	default:
+		logrus.Fatalln("invalid complex function:", function)
+	}
+	return mandel.Mandelbrot
 }
 
 // parseModeFlag parses the _mode_ string to a coloring function.

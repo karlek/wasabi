@@ -181,8 +181,8 @@ func EscapedLast(z, c complex128, frac *fractal.Fractal) (complex128, int64) {
 	return z, -1
 }
 
-func Mandelbrot(z, c, _ complex128) complex128 {
-	return z*z + c
+func Mandelbrot(z, c, coef complex128) complex128 {
+	return coef*z*z + coef*c
 }
 
 func BurningShip(z, c, _ complex128) complex128 {
@@ -199,6 +199,16 @@ func Wrench(z, c, _ complex128) complex128 {
 	rz, iz := real(z), imag(z)
 	rc, ic := real(c), imag(c)
 	return complex(math.Abs(iz*ic*rz), math.Abs(iz*rz*rc)) + c
+}
+
+func B1(z, c, _ complex128) complex128 {
+	tmp := z*z + c
+	return complex(real(tmp), -imag(tmp))
+}
+
+func B2(z, c, _ complex128) complex128 {
+	tmp := z*z + c
+	return complex(imag(tmp)-real(tmp), real(tmp)*imag(tmp))
 }
 
 func equal(a, b func(complex128, complex128, complex128) complex128) bool {
