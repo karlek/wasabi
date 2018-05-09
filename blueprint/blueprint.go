@@ -142,7 +142,7 @@ func parseRegistrer(registrer string) mandel.Registrer {
 		return mandel.Converged
 	case "primitive":
 		return mandel.Primitive
-	case "escapes":
+	case "escapes", "escape":
 		return mandel.Escaped
 	default:
 		logrus.Fatalln("Unknown registrer:", registrer)
