@@ -27,8 +27,8 @@ func saveArt(frac *fractal.Fractal) (err error) {
 	return nil
 }
 
-func loadArt() (frac *fractal.Fractal, err error) {
-	file, err := os.Open("r-g-b.gob")
+func loadHistogram(filename string) (frac *fractal.Fractal, err error) {
+	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
 	}
@@ -42,4 +42,8 @@ func loadArt() (frac *fractal.Fractal, err error) {
 	}
 
 	return frac, nil
+}
+
+func loadArt() (frac *fractal.Fractal, err error) {
+	return loadHistogram("r-g-b.gob")
 }
