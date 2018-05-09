@@ -113,9 +113,12 @@ var (
 
 	// Theta rotation
 	theta float64
+
+	mergeFlag bool
 )
 
 func init() {
+	flag.BoolVar(&mergeFlag, "merge", false, "merge histograms")
 	flag.BoolVar(&load, "load", false, "use pre-computed values.")
 	flag.BoolVar(&silent, "silent", false, "no output")
 	flag.BoolVar(&save, "save", false, "save orbits.")

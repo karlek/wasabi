@@ -3,6 +3,7 @@ package histo
 
 import (
 	"encoding/gob"
+	"fmt"
 	"os"
 )
 
@@ -67,4 +68,16 @@ func Load() (r, g, b Histo, err error) {
 		return nil, nil, nil, err
 	}
 	return r, g, b, nil
+}
+
+func Merge(a, b Histo) (Histo, error) {
+	if len(a) != len(b) || len(a[0]) != len(b[0]) {
+		return nil, fmt.Errorf("invalid sizes of histograms: %dx%d != %dx%d", len(a), len(a[0]), len(b), len(b[0]))
+	}
+	for y, row := range a {
+		for x, cell := range row {
+			b[y][x] += cell
+		}
+	}
+	return b, nil
 }

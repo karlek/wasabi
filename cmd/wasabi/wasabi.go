@@ -51,6 +51,13 @@ func main() {
 		return
 	}
 
+	if mergeFlag {
+		if err := merge(flag.Args()); err != nil {
+			logrus.Warnln(err)
+		}
+		return
+	}
+
 	// Render blueprint.
 	if err := renderBuddha(flag.Arg(0)); err != nil {
 		logrus.Warnln(err)
@@ -158,6 +165,39 @@ func renderBuddha(blueprintPath string) (err error) {
 		if err := multipleExposures(ren, frac); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func merge(filenames []string) (err error) {
+	if len(filenames) < 3 {
+		return fmt.Errorf("please provide at least two histograms and a blueprint path.")
+	}
+	blueprintPath := filenames[len(filenames)-1]
+	frac, ren, blue, err := initialize(blueprintPath)
+	if err != nil {
+		return err
+	}
+	for i, fname := range filenames[:len(filenames)-1] {
+		fmt.Printf("\r[i] %d/%d", i+1, len(filenames)-1)
+		tmpFrac, err := loadHistogram(fname)
+		if err != nil {
+			return err
+		}
+		if frac.R, err = histo.Merge(tmpFrac.R, frac.R); err != nil {
+			return err
+		}
+		if frac.G, err = histo.Merge(tmpFrac.G, frac.G); err != nil {
+			return err
+		}
+		if frac.B, err = histo.Merge(tmpFrac.B, frac.B); err != nil {
+			return err
+		}
+	}
+	ren.Factor /= 100
+	plot.Plot(ren, frac)
+	if err := ren.Render(blue.Png, blue.Jpg, out); err != nil {
+		return err
 	}
 	return nil
 }
