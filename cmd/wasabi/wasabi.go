@@ -72,17 +72,15 @@ func initialize(blueprintPath string) (frac *fractal.Fractal, ren *render.Render
 	frac, ren = blue.Fractal(), blue.Render()
 	draw.Draw(ren.Image, ren.Image.Bounds(), &image.Uniform{blue.BaseColor.StandardRGBA()}, image.ZP, draw.Src)
 	return frac, ren, blue, nil
+}
 
-	// if factor == -1 {
-	// 	// factor = 0.01 / tries
-	// 	// factor = ren.OrbitRatio / (1000 * blue.Tries)
-	// 	factor = blue.Factor
-	// }
-
-	// if out == "" {
-	// 	out = blue.OutputFilename
-	// }
-	// frac.Theta = theta
+func readFlags(frac *fractal.Fractal, ren *render.Render) {
+	frac.Theta = theta
+	ren.F = f
+	ren.Exposure = exposure
+	if factor != -1 {
+		ren.Factor = factor
+	}
 }
 
 func renderBuddha(blueprintPath string) (err error) {
@@ -93,7 +91,7 @@ func renderBuddha(blueprintPath string) (err error) {
 	if err != nil {
 		return err
 	}
-	frac.Theta = theta
+	readFlags(frac, ren)
 
 	if frac.Method.Mode() == coloring.Image {
 		file, err := os.Open("ref-heart.png")
@@ -111,8 +109,6 @@ func renderBuddha(blueprintPath string) (err error) {
 		if !silent {
 			logrus.Println("[-] Loading visits.")
 		}
-		ren.F = f
-		ren.Exposure = exposure
 		frac, err = loadArt()
 		if err != nil {
 			return err
@@ -129,9 +125,6 @@ func renderBuddha(blueprintPath string) (err error) {
 				return err
 			}
 		}
-	}
-	if factor != -1 {
-		ren.Factor = factor
 	}
 	logrus.Println("[i] Density", ren.OrbitRatio)
 	// div := (3 * 10 * ren.OrbitRatio * frac.Tries * float64((histo.Max(frac.R) + histo.Max(frac.G) + histo.Max(frac.B))))
