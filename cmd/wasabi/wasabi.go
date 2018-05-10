@@ -58,6 +58,10 @@ func handleFlags() {
 		usage()
 		os.Exit(1)
 	}
+
+	if silent {
+		logrus.SetLevel(logrus.WarnLevel)
+	}
 }
 
 // Handle interrupts as fails, so we can chain with an image viewer.
@@ -90,9 +94,7 @@ func readFlags(frac *fractal.Fractal, ren *render.Render) {
 }
 
 func renderBuddha(blueprintPath string) (err error) {
-	if !silent {
-		logrus.Println("[.] Initializing.")
-	}
+	logrus.Infoln("[.] Initializing.")
 	frac, ren, blue, err := initialize(blueprintPath)
 	if err != nil {
 		return err
@@ -100,9 +102,7 @@ func renderBuddha(blueprintPath string) (err error) {
 	readFlags(frac, ren)
 
 	if load {
-		if !silent {
-			logrus.Println("[-] Loading visits.")
-		}
+		logrus.Infoln("[-] Loading visits.")
 		frac, err = loadArt()
 		if err != nil {
 			return err
@@ -114,13 +114,13 @@ func renderBuddha(blueprintPath string) (err error) {
 			return fmt.Errorf("black")
 		}
 		if blue.CacheHistograms {
-			logrus.Println("[i] Saving r, g, b channels")
+			logrus.Infoln("[i] Saving r, g, b channels")
 			if err := saveArt(frac); err != nil {
 				return err
 			}
 		}
 	}
-	logrus.Println("[i] Density", ren.OrbitRatio)
+	logrus.Infoln("[i] Density", ren.OrbitRatio)
 	// div := (3 * 10 * ren.OrbitRatio * frac.Tries * float64((histo.Max(frac.R) + histo.Max(frac.G) + histo.Max(frac.B))))
 	// div := ren.OrbitRatio * frac.Tries
 	// fmt.Println(div)
@@ -129,13 +129,9 @@ func renderBuddha(blueprintPath string) (err error) {
 	// ren.Factor = factor
 	// ren.F = f
 
-	// if !silent {
-	// 	fmt.Println(ren)
-	// }
-
 	// Importance map.
 	if frac.PlotImportance {
-		logrus.Println("[-] Plotting importance map.")
+		logrus.Infoln("[-] Plotting importance map.")
 		impRen := render.New(frac.Width, frac.Height, ren.F, ren.Factor, ren.Exposure)
 		plot.Importance(impRen, frac)
 		if err := impRen.Render(blue.Png, blue.Jpg, "importance"); err != nil {
