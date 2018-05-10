@@ -30,12 +30,7 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	// Handle interrupts as fails, so we can chain with an image viewer.
-	inter := make(chan os.Signal, 1)
-	signal.Notify(inter, os.Interrupt)
-	go func(inter chan os.Signal) {
-		<-inter
-		os.Exit(1)
-	}(inter)
+	handleInterrupts()
 
 	// Parse flag and demand blueprint file.
 	flag.Parse()
@@ -62,6 +57,15 @@ func main() {
 	if err := renderBuddha(flag.Arg(0)); err != nil {
 		logrus.Warnln(err)
 	}
+}
+
+func handleInterrupts() {
+	inter := make(chan os.Signal, 1)
+	signal.Notify(inter, os.Interrupt)
+	go func(inter chan os.Signal) {
+		<-inter
+		os.Exit(1)
+	}(inter)
 }
 
 func initialize(blueprintPath string) (frac *fractal.Fractal, ren *render.Render, blue *blueprint.Blueprint, err error) {
