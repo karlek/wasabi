@@ -32,32 +32,37 @@ func main() {
 	handleInterrupts()
 
 	// Parse flag and demand blueprint file.
+	handleFlags()
+
+	var err error
+	switch {
+	case interactive:
+		// Live render.
+		pixelgl.Run(renderRun)
+		return
+	case mergeFlag:
+		// Merge histograms.
+		err = merge(flag.Args())
+	default:
+		// Render blueprint.
+		err = renderBuddha(flag.Arg(0))
+	}
+	if err != nil {
+		logrus.Warnln(err)
+	}
+}
+
+// Parse flag and demand blueprint file.
+func handleFlags() {
 	flag.Parse()
 	parseFunctionFlag()
 	if flag.NArg() < 1 {
 		usage()
 		os.Exit(1)
 	}
-
-	// Live render.
-	if interactive {
-		pixelgl.Run(renderRun)
-		return
-	}
-
-	if mergeFlag {
-		if err := merge(flag.Args()); err != nil {
-			logrus.Warnln(err)
-		}
-		return
-	}
-
-	// Render blueprint.
-	if err := renderBuddha(flag.Arg(0)); err != nil {
-		logrus.Warnln(err)
-	}
 }
 
+// Handle interrupts as fails, so we can chain with an image viewer.
 func handleInterrupts() {
 	inter := make(chan os.Signal, 1)
 	signal.Notify(inter, os.Interrupt)
