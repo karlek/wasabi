@@ -27,7 +27,6 @@ import (
 
 func main() {
 	defer profile.Start(profile.CPUProfile).Stop()
-	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	// Handle interrupts as fails, so we can chain with an image viewer.
 	handleInterrupts()
