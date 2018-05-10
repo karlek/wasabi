@@ -224,8 +224,6 @@ func parseModeFlag(mode string) coloring.Mode {
 		return coloring.OrbitLength
 	case "path":
 		return coloring.Path
-	case "image":
-		return coloring.Image
 	default:
 		logrus.Fatalln("invalid coloring function:", mode)
 	}
