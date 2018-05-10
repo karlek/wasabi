@@ -40,9 +40,8 @@ type Fractal struct {
 	Threshold int64   // Threshold length of orbits.
 
 	// Coloring method specific options.
-	PathPoints  int64       // Number of intermediate points used for path interpolation.
-	BezierLevel int         // Bezier interpolation level: 1 is linear, 2 is quadratic etc.
-	reference   image.Image // Reference image to sample pixel colors from.
+	PathPoints  int64 // Number of intermediate points used for path interpolation.
+	BezierLevel int   // Bezier interpolation level: 1 is linear, 2 is quadratic etc.
 
 	Z, C func(complex128, *rand7i.ComplexRNG) complex128
 
@@ -143,15 +142,6 @@ func (frac *Fractal) Clear() {
 	frac.R = histo.New(frac.Width, frac.Height)
 	frac.G = histo.New(frac.Width, frac.Height)
 	frac.B = histo.New(frac.Width, frac.Height)
-}
-
-// SetReference sets the reference image used for image trapping.
-func (frac *Fractal) SetReference(i image.Image) {
-	frac.reference = i
-}
-
-func (frac *Fractal) Reference() image.Image {
-	return frac.reference
 }
 
 // X translates the real value of the complex point to an X-coordinate in the

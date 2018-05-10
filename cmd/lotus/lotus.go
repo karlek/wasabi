@@ -97,7 +97,6 @@ func main() {
 	// 	if err != nil {
 	// 		log.Fatalln(err)
 	// 	}
-	// 	frac.SetReference(ref)
 
 	wg := new(sync.WaitGroup)
 	wg.Add(width)
@@ -156,14 +155,6 @@ func main() {
 				// maxDist = math.Max(dist, maxDist)
 				rgba := col.StandardRGBA()
 				//} fmt.Println(rgba)
-
-				// red, green, blue := frac.ReferenceColor(pt)
-				// rgba := color.RGBA{
-				// 	uint8(red * 255),
-				// 	uint8(green * 255),
-				// 	uint8(blue * 255),
-				// 	uint8(255),
-				// }
 
 				// rgba := color.RGBA{
 				// 	uint8(r >> 8),

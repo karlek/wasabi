@@ -13,7 +13,6 @@ import (
 	"github.com/karlek/progress/barcli"
 	"github.com/karlek/wasabi/coloring"
 	"github.com/karlek/wasabi/fractal"
-	"github.com/karlek/wasabi/iro"
 )
 
 // FillHistograms creates a number of workers which finds orbits and stores
@@ -117,8 +116,6 @@ func Attempt(z, c complex128, orbit *fractal.Orbit, frac *fractal.Fractal) int64
 		pixels = registerField(iterations, orbit, frac)
 	case coloring.Path:
 		pixels = registerPaths(iterations, orbit, frac)
-	case coloring.Image:
-		pixels = registerImage(iterations, orbit, frac)
 	}
 	return pixels
 }
@@ -214,19 +211,6 @@ func registerOrbit(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) (sum i
 	red, green, blue := frac.Method.Get(it, frac.Iterations)
 	for _, p := range orbit.Points[:it] {
 		sum += registerPoint(p, orbit, frac, red, green, blue)
-	}
-	return sum
-}
-
-// registerImage colors the point inside an orbit from a reference image.
-func registerImage(it int64, orbit *fractal.Orbit, frac *fractal.Fractal) (sum int64) {
-	// Get color from gradient based on iteration count of the orbit.
-	for _, p := range orbit.Points[:it] {
-		if pt, ok := frac.Point(p, orbit.C); ok {
-			red, green, blue := iro.ReferenceColor(frac.Reference(), pt)
-			increase(pt, red, green, blue, frac)
-			sum++
-		}
 	}
 	return sum
 }

@@ -14,8 +14,6 @@ const (
 	VectorField
 	// Path linearly interpolates between the points in the path.
 	Path
-	// Image colors the orbits based on a reference image.
-	Image
 )
 
 func (m Mode) String() string {
@@ -30,8 +28,6 @@ func (m Mode) String() string {
 		return "OrbitLength"
 	case Path:
 		return "Path"
-	case Image:
-		return "Image"
 	default:
 		return "fail"
 	}
