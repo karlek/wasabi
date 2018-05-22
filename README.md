@@ -47,6 +47,10 @@ Wasabi is a renderer of buddhabrot and its family members. It used to share its 
 	<img src="https://github.com/karlek/wasabi/blob/master/img/point-trap.jpg?raw=true" width="45.0%">
 </p>
 
+> Histogram merging, i.e plotting multiple renders on the same canvas.
+
+<p align="center"><img src="https://github.com/karlek/wasabi/blob/master/img/histogram-merge.jpg?raw=true" width="45.0%"></p>
+
 > One of the more famous of my renders ;)
 
 <p align="center"><img src="https://github.com/karlek/wasabi/blob/master/img/magma.png?raw=true" width="45.0%"></p>
