@@ -76,7 +76,7 @@ Wasabi is a renderer of buddhabrot and its family members. It used to share its 
 ## Install
 
 ```fish
-$ go get github.com/karlek/wasabi
+$ go build github.com/karlek/wasabi/cmd/wasabi
 ```
 
 ## Run
