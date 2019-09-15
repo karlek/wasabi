@@ -6,12 +6,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/karlek/wasabi/coloring"
 	"github.com/karlek/wasabi/fractal"
 	"github.com/karlek/wasabi/iro"
 	"github.com/karlek/wasabi/mandel"
 	"github.com/karlek/wasabi/plot"
+	"github.com/sirupsen/logrus"
 )
 
 var (

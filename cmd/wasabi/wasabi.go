@@ -11,9 +11,9 @@ import (
 	"os/signal"
 	"runtime"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/pkg/profile"
+	"github.com/sirupsen/logrus"
 
 	"github.com/karlek/wasabi/blueprint"
 	"github.com/karlek/wasabi/buddha"

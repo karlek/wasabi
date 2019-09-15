@@ -9,11 +9,11 @@ import (
 	"os"
 	"sync"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/karlek/wasabi/fractal"
 	"github.com/karlek/wasabi/iro"
 	"github.com/karlek/wasabi/mandel"
 	"github.com/pkg/profile"
+	"github.com/sirupsen/logrus"
 )
 
 func smooth(escapesIn, iterations float64, last complex128) float64 {
