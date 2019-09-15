@@ -16,7 +16,7 @@ import (
 	"github.com/karlek/wasabi/plot"
 	"github.com/karlek/wasabi/render"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // Blueprint contains the settings and options needed to render a fractal.
