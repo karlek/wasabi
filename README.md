@@ -9,51 +9,51 @@ Wasabi is a renderer of buddhabrot and its family members. It used to share its 
 > To the left, an original buddhabrot and to the right an anti-buddhabrot.
 
 <p align="center">
-	<img src="https://github.com/karlek/wasabi/blob/master/img/original.jpg?raw=true" width="45.0%">
-	<img src="https://github.com/karlek/wasabi/blob/master/img/anti.jpg?raw=true" width="45.0%">
+	<img src="https://public.karlek.io/original.jpg" width="45.0%">
+	<img src="https://public.karlek.io/anti.jpg" width="45.0%">
 </p>
 
 > To the left an image of the linear calculation path rendering technique, and
 > to the right a second degree bezier interpolation.
 
 <p align="center">
-	<img src="https://github.com/karlek/wasabi/blob/master/img/calc.jpg?raw=true" width="45.0%">
-	<img src="https://github.com/karlek/wasabi/blob/master/img/bezier.jpg?raw=true" width="45.0%">
+	<img src="https://public.karlek.io/calc.jpg" width="45.0%">
+	<img src="https://public.karlek.io/bezier.jpg" width="45.0%">
 </p>
 
 > It's also possible to plot the other capital planes of the complex space. I
 > created a new method to visualize angles between points inside orbits
 
 <p align="center">
-	<img src="https://github.com/karlek/wasabi/blob/master/img/1-zrcr.jpg?raw=true" width="45.0%">
-	<img src="https://github.com/karlek/wasabi/blob/master/img/2-angles.jpg?raw=true" width="45.0%">
+	<img src="https://public.karlek.io/1-zrcr.jpg" width="45.0%">
+	<img src="https://public.karlek.io/2-angles.jpg" width="45.0%">
 </p>
 
 > There are multiple ways to tweak the complex functions.
 
-<p align="center"><img src="https://github.com/karlek/wasabi/blob/master/img/inwards/inwards.jpg?raw=true" width="45.0%"></p>
+<p align="center"><img src="https://public.karlek.io/inwards/inwards.jpg" width="45.0%"></p>
 	
 > The project has rendered a few visually interesting bugs.
 
 <p align="center">
-	<img src="https://github.com/karlek/wasabi/blob/master/img/bug.jpg?raw=true" width="45.0%">
-	<img src="https://github.com/karlek/wasabi/blob/master/img/race-condition.jpg?raw=true" width="45.0%">
+	<img src="https://public.karlek.io/bug.jpg" width="45.0%">
+	<img src="https://public.karlek.io/race-condition.jpg" width="45.0%">
 </p>
 
 > To the left an point orbit trap around origo, and to the right off-center.
 
 <p align="center">
-	<img src="https://github.com/karlek/wasabi/blob/master/img/orbit-trap.jpg?raw=true" width="45.0%">
-	<img src="https://github.com/karlek/wasabi/blob/master/img/point-trap.jpg?raw=true" width="45.0%">
+	<img src="https://public.karlek.io/orbit-trap.jpg" width="45.0%">
+	<img src="https://public.karlek.io/point-trap.jpg" width="45.0%">
 </p>
 
 > Histogram merging, i.e plotting multiple renders on the same canvas.
 
-<p align="center"><img src="https://github.com/karlek/wasabi/blob/master/img/histogram-merge.jpg?raw=true" width="45.0%"></p>
+<p align="center"><img src="https://public.karlek.io/histogram-merge.jpg" width="45.0%"></p>
 
 > One of the more famous of my renders ;)
 
-<p align="center"><img src="https://github.com/karlek/wasabi/blob/master/img/magma.png?raw=true" width="45.0%"></p>
+<p align="center"><img src="https://public.karlek.io/magma.png" width="45.0%"></p>
 
 ## Features
 
@@ -71,7 +71,7 @@ Wasabi is a renderer of buddhabrot and its family members. It used to share its 
 >with the necessity of having a random distribution. If you know of a way to
 >benchmark randomness as well as speed, please create an issue!
 
-![Benchmark](https://github.com/karlek/wasabi/blob/master/img/benchmark.png?raw=true)
+![Benchmark](https://public.karlek.io/benchmark.png)
 
 ## Install
 
